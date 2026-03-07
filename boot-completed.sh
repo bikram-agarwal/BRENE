@@ -102,7 +102,7 @@ fi
 # ${SUSFS_BIN} add_sus_path_loop /sys/block/loop0
 if [[ $config_hide_data_local_tmp == 1 ]]; then
 	for i in $(ls /data/local/tmp); do
-		${SUSFS_BIN} add_sus_path_loop "/data/local/tmp/${i}"
+		${SUSFS_BIN} add_sus_path "/data/local/tmp/${i}"
 	done
 fi
 
@@ -166,9 +166,9 @@ while true; do
 done
 
 ## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard is ##
-${SUSFS_BIN} set_sdcard_root_path /storage/emulated/0
+${SUSFS_BIN} set_sdcard_root_path /sdcard
 ## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard/Android/data is ##
-${SUSFS_BIN} set_android_data_root_path /storage/emulated/0/Android/data
+${SUSFS_BIN} set_android_data_root_path /sdcard/Android/data
 
 # Load custom_sus_map.txt
 if [ -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
@@ -204,11 +204,6 @@ fi
 if [[ $config_hide_sdcard_android_data == 1 ]]; then
 	for i in $(ls /sdcard/Android/data); do
 		${SUSFS_BIN} add_sus_path "/sdcard/Android/data/${i}"
-		${SUSFS_BIN} add_sus_path_loop "/sdcard/Android/data/${i}"
-	done
-	for i in $(ls /storage/emulated/0/Android/data); do
-		${SUSFS_BIN} add_sus_path "/storage/emulated/0/Android/data/${i}"
-		${SUSFS_BIN} add_sus_path_loop "/storage/emulated/0/Android/data/${i}"
 	done
 fi
 
@@ -216,41 +211,17 @@ fi
 ## Now we can add the path ##
 if [[ $config_hide_rooted_app_folders == 1 ]]; then
 	[ -d /sdcard/MT2 ] && ${SUSFS_BIN} add_sus_path /sdcard/MT2
-	[ -d /sdcard/MT2 ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/MT2
-	[ -d /storage/emulated/0/MT2 ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/MT2
-
 	[ -d /sdcard/OhMyFont ] && ${SUSFS_BIN} add_sus_path /sdcard/OhMyFont
-	[ -d /sdcard/OhMyFont ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/OhMyFont
-	[ -d /storage/emulated/0/OhMyFont ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/OhMyFont
-
 	[ -d /sdcard/AppManager ] && ${SUSFS_BIN} add_sus_path /sdcard/AppManager
-	[ -d /sdcard/AppManager ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/AppManager
-	[ -d /storage/emulated/0/AppManager ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/AppManager
-	
 	[ -d /sdcard/DataBackup ] && ${SUSFS_BIN} add_sus_path /sdcard/DataBackup
-	[ -d /sdcard/DataBackup ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/DataBackup
-	[ -d /storage/emulated/0/DataBackup ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/DataBackup
-	
 	[ -d /sdcard/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path /sdcard/Android/fas-rs
-	[ -d /sdcard/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Android/fas-rs
-	[ -d /storage/emulated/0/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/Android/fas-rs
 fi
 
 if [[ $config_hide_custom_recovery_folders == 1 ]]; then
 	[ -d /sdcard/Fox ] && ${SUSFS_BIN} add_sus_path /sdcard/Fox
-	[ -d /sdcard/Fox ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Fox
-	[ -d /storage/emulated/0/Fox ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/Fox
-
 	[ -d /sdcard/PBRP ] && ${SUSFS_BIN} add_sus_path /sdcard/PBRP
-	[ -d /sdcard/PBRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/PBRP
-	[ -d /storage/emulated/0/PBRP ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/PBRP
-
 	[ -d /sdcard/TWRP ] && ${SUSFS_BIN} add_sus_path /sdcard/TWRP
-	[ -d /sdcard/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/TWRP
-	[ -d /storage/emulated/0/TWRP ] && ${SUSFS_BIN} add_sus_path /storage/emulated/0/TWRP
-
 	[ -d /storage/emulated/TWRP ] && ${SUSFS_BIN} add_sus_path /storage/emulated/TWRP
-	[ -d /storage/emulated/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/TWRP
 fi
 
 echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
