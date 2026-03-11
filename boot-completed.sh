@@ -111,12 +111,12 @@ fi
 ## Please note that sometimes the path needs to be added twice or above to be effective ##
 ## Besides, all user apps without root access cannot see the hidden path '/sdcard/<hidden_path>' unless you grant it root access ##
 ## First we need to wait until files are accessible in /sdcard ##
-until [ -d /storage/emulated/0/Android ]; do sleep 1; done
+until [ -d /sdcard/Android ]; do sleep 1; done
 
 ## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard is ##
-${SUSFS_BIN} set_sdcard_root_path /storage/emulated/0
+${SUSFS_BIN} set_sdcard_root_path /sdcard
 ## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard/Android/data is ##
-${SUSFS_BIN} set_android_data_root_path /storage/emulated/0/Android/data
+${SUSFS_BIN} set_android_data_root_path /sdcard/Android/data
 
 # Load custom_sus_map.txt
 if [ -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
@@ -150,20 +150,20 @@ fi
 #### Hide path like /sdcard/<target_root_dir> from all user app processes without root access ####
 ## Now we can add the path ##
 if [[ $config_hide_rooted_app_folders == 1 ]]; then
-	[ -d /storage/emulated/0/MT2 ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/MT2
-	[ -d /storage/emulated/0/rlgg ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/rlgg
-	[ -d /storage/emulated/0/xinhao ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/xinhao
-	[ -d /storage/emulated/0/OhMyFont ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/OhMyFont
-	[ -d /storage/emulated/0/AppManager ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/AppManager
-	[ -d /storage/emulated/0/DataBackup ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/DataBackup
-	[ -d /storage/emulated/0/KernelFlasher ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/KernelFlasher
-	[ -d /storage/emulated/0/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/Android/fas-rs
+	[ -d /sdcard/MT2 ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/MT2
+	[ -d /sdcard/rlgg ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/rlgg
+	[ -d /sdcard/xinhao ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/xinhao
+	[ -d /sdcard/OhMyFont ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/OhMyFont
+	[ -d /sdcard/AppManager ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/AppManager
+	[ -d /sdcard/DataBackup ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/DataBackup
+	[ -d /sdcard/KernelFlasher ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/KernelFlasher
+	[ -d /sdcard/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Android/fas-rs
 fi
 
 if [[ $config_hide_custom_recovery_folders == 1 ]]; then
-	[ -d /storage/emulated/0/Fox ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/Fox
-	[ -d /storage/emulated/0/PBRP ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/PBRP
-	[ -d /storage/emulated/0/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/0/TWRP
+	[ -d /sdcard/Fox ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Fox
+	[ -d /sdcard/PBRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/PBRP
+	[ -d /sdcard/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/TWRP
 	[ -d /storage/emulated/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/TWRP
 fi
 
@@ -183,9 +183,9 @@ fi
 ## Now we can add the path ##
 if [[ $config_hide_sdcard_android_data == 1 ]]; then
 	while true; do
-		items=$(ls /storage/emulated/0/Android/data | wc -l)
+		items=$(ls /sdcard/Android/data | wc -l)
 		sleep 10
-		[[ "${items}" -eq "$(ls /storage/emulated/0/Android/data | wc -l)" ]] && break
+		[[ "${items}" -eq "$(ls /sdcard/Android/data | wc -l)" ]] && break
 	done
 
 	for i in $(pm list packages -3 | cut -d':' -f2); do
