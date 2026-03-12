@@ -38,35 +38,28 @@ jobs:
           echo "Created BRENE-${{ steps.version.outputs.version }}.zip"
           ls -la "BRENE-${{ steps.version.outputs.version }}.zip"
 
-      - name: Create release as draft
-        id: release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           files: "BRENE-${{ steps.version.outputs.version }}.zip"
           generate_release_notes: true
-          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fetch release body and update changelog.md
-        id: fetch-release
         run: |
           set +x
-          RELEASE_ID="${{ steps.release.outputs.id }}"
+          VERSION="${{ steps.version.outputs.version }}"
           RESPONSE=$(curl -sS -w "\n%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}")
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${VERSION}")
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           PAYLOAD=$(echo "$RESPONSE" | sed '$d')
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Release API returned HTTP $HTTP_CODE"
             exit 1
           fi
-          VERSION="${{ steps.version.outputs.version }}"
           BODY=$(echo "$PAYLOAD" | jq -r '.body // empty')
-          TAG_NAME=$(echo "$PAYLOAD" | jq -r '.tag_name // empty')
-          if [ -z "$TAG_NAME" ]; then TAG_NAME="$VERSION"; fi
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           if [ -z "$BODY" ]; then
             BODY="(No release notes for this version.)"
           fi
@@ -82,11 +75,10 @@ jobs:
       - name: Write update.json and push
         run: |
           set +x
-          TAG_NAME="${{ steps.fetch-release.outputs.tag_name }}"
           VERSION="${{ steps.version.outputs.version }}"
           VERSION_CODE="${{ steps.version.outputs.versionCode }}"
           BRANCH="${{ github.ref_name }}"
-          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/BRENE-${VERSION}.zip"
+          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/BRENE-${VERSION}.zip"
           CHANGELOG_URL="https://raw.githubusercontent.com/${{ github.repository }}/${BRANCH}/changelog.md"
           jq -n \
             --arg version "$VERSION" \
@@ -103,10 +95,3 @@ jobs:
             git commit -m "chore(ci): sync module.prop, update.json and changelog.md for release ${VERSION}"
             git push origin HEAD
           fi
-
-      - name: Publish release
-        run: |
-          curl -sS -f -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" \
-            -d '{"draft":false}' "https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.release.outputs.id }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
