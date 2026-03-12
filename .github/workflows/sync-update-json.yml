@@ -1,0 +1,70 @@
+name: Sync update.json
+
+on:
+  push:
+    branches: [main]
+    paths: ['module.prop']
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse module.prop
+        id: prop
+        run: |
+          VERSION=$(grep '^version=' module.prop | cut -d= -f2-)
+          VERSION_CODE=$(grep '^versionCode=' module.prop | cut -d= -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
+
+      - name: Get latest release info
+        id: release
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/$REPO/releases/latest")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          if [ "$HTTP_CODE" != "200" ] || [ -z "$BODY" ]; then
+            echo "zipUrl=" >> $GITHUB_OUTPUT
+            echo "changelog=https://github.com/$REPO/releases" >> $GITHUB_OUTPUT
+          else
+            ZIP_URL=$(echo "$BODY" | jq -r '(.assets[]? | select(.name | endswith(".zip")) | .browser_download_url) // empty' | head -n1)
+            TAG_NAME=$(echo "$BODY" | jq -r '.tag_name // empty')
+            if [ -n "$TAG_NAME" ]; then
+              CHANGELOG_URL="https://github.com/$REPO/releases/tag/$TAG_NAME"
+            else
+              CHANGELOG_URL="https://github.com/$REPO/releases"
+            fi
+            echo "zipUrl=${ZIP_URL:-}" >> $GITHUB_OUTPUT
+            echo "changelog=$CHANGELOG_URL" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Write update.json
+        run: |
+          jq -n \
+            --arg version "${{ steps.prop.outputs.version }}" \
+            --argjson versionCode ${{ steps.prop.outputs.versionCode }} \
+            --arg zipUrl "${{ steps.release.outputs.zipUrl }}" \
+            --arg changelog "${{ steps.release.outputs.changelog }}" \
+            '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > update.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add update.json
+          if git diff --staged --quiet; then
+            echo "No changes to update.json"
+          else
+            git commit -m "chore(ci): sync update.json from module.prop"
+            git push
+          fi
