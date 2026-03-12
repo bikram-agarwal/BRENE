@@ -47,13 +47,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Fetch release body and update changelog.md
+        run: |
+          set +x
+          VERSION="${{ steps.version.outputs.version }}"
+          BODY=$(curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${VERSION}" | jq -r '.body // empty')
+          printf '## %s\n\n%s\n\n' "$VERSION" "$BODY" > changelog_section.md
+          if [ -f changelog.md ]; then
+            cat changelog_section.md changelog.md > changelog.md.tmp
+          else
+            cp changelog_section.md changelog.md.tmp
+          fi
+          mv changelog.md.tmp changelog.md
+          rm -f changelog_section.md
+
       - name: Write update.json and push to main
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
           VERSION_CODE="${{ steps.version.outputs.versionCode }}"
           ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/BRENE-${VERSION}.zip"
-          CHANGELOG_URL="https://github.com/${{ github.repository }}/releases/tag/${VERSION}"
+          CHANGELOG_URL="https://raw.githubusercontent.com/${{ github.repository }}/main/changelog.md"
           jq -n \
             --arg version "$VERSION" \
             --argjson versionCode $VERSION_CODE \
@@ -62,10 +77,10 @@ jobs:
             '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > update.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add module.prop update.json
+          git add module.prop update.json changelog.md
           if git diff --staged --quiet; then
-            echo "No changes to module.prop or update.json"
+            echo "No changes to module.prop, update.json or changelog.md"
           else
-            git commit -m "chore(ci): sync module.prop and update.json for release ${VERSION}"
+            git commit -m "chore(ci): sync module.prop, update.json and changelog.md for release ${VERSION}"
             git push
           fi
