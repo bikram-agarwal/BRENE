@@ -38,12 +38,13 @@ jobs:
           echo "Created BRENE-${{ steps.version.outputs.version }}.zip"
           ls -la "BRENE-${{ steps.version.outputs.version }}.zip"
 
-      - name: Publish release
+      - name: Create release as draft
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           files: "BRENE-${{ steps.version.outputs.version }}.zip"
           generate_release_notes: true
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,8 +52,18 @@ jobs:
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
-          BODY=$(curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${VERSION}" | jq -r '.body // empty')
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${VERSION}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d' | jq -r '.body // empty')
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Release API returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          if [ -z "$BODY" ]; then
+            echo "Warning: Release body empty, using placeholder"
+            BODY="(No release notes for this version.)"
+          fi
           printf '## %s\n\n%s\n\n' "$VERSION" "$BODY" > changelog_section.md
           if [ -f changelog.md ]; then
             cat changelog_section.md changelog.md > changelog.md.tmp
@@ -84,3 +95,9 @@ jobs:
             git commit -m "chore(ci): sync module.prop, update.json and changelog.md for release ${VERSION}"
             git push
           fi
+
+      - name: Publish release
+        run: |
+          gh release edit ${{ steps.version.outputs.version }} --draft=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
