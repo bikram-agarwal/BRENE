@@ -189,7 +189,7 @@ if [[ $config_hide_sdcard_android_data == 1 ]]; then
 	done
 
 	for i in $(pm list packages -3 | cut -d':' -f2); do
-		[ -d "/sdcard/Android/data/$i" ] && ${SUSFS_BIN} add_sus_path_loop "/sdcard/Android/data/$i"
+		[ -d "/sdcard/Android/data/$i" ] && ${SUSFS_BIN} add_sus_path "/sdcard/Android/data/$i"
 	done
 fi
 
