@@ -19,21 +19,28 @@ jobs:
       - name: Parse module.prop
         id: prop
         run: |
+          set +x
           VERSION=$(grep '^version=' module.prop | cut -d= -f2-)
           VERSION_CODE=$(grep '^versionCode=' module.prop | cut -d= -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "Read the version and versionCode from module.prop"
+          echo "version=$VERSION versionCode=$VERSION_CODE"
 
       - name: Get latest release info
         id: release
         env:
           REPO: ${{ github.repository }}
         run: |
+          set +x
           RESPONSE=$(curl -sS -w "\n%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/$REPO/releases/latest")
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "Trying to get the latest release info from the GitHub API"
+          echo "Release API HTTP code: $HTTP_CODE"
           if [ "$HTTP_CODE" != "200" ] || [ -z "$BODY" ]; then
+            echo "Found no release or encountered API error. Using fallback changelog URL"
             echo "zipUrl=" >> $GITHUB_OUTPUT
             echo "changelog=https://github.com/$REPO/releases" >> $GITHUB_OUTPUT
           else
@@ -44,21 +51,29 @@ jobs:
             else
               CHANGELOG_URL="https://github.com/$REPO/releases"
             fi
+            echo ""
+            echo "zipUrl=$ZIP_URL"
+            echo "tag_name=$TAG_NAME"
+            echo "changelog=$CHANGELOG_URL"
             echo "zipUrl=${ZIP_URL:-}" >> $GITHUB_OUTPUT
             echo "changelog=$CHANGELOG_URL" >> $GITHUB_OUTPUT
           fi
 
       - name: Write update.json
         run: |
+          set +x
           jq -n \
             --arg version "${{ steps.prop.outputs.version }}" \
             --argjson versionCode ${{ steps.prop.outputs.versionCode }} \
             --arg zipUrl "${{ steps.release.outputs.zipUrl }}" \
             --arg changelog "${{ steps.release.outputs.changelog }}" \
             '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > update.json
+          echo "Written update.json:"
+          cat update.json
 
       - name: Commit and push if changed
         run: |
+          set +x
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add update.json
