@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths: ['module.prop']
+  workflow_dispatch:
 
 jobs:
   sync:
