@@ -1,7 +1,7 @@
 id=brene
 name=BRENE - SUSFS-FOR-KERNELSU
 version=v0.0.37
-versionCode=1
-author=rrr333nnn333, KOWX712, sidex15 & simonpunk@gitlab.com
+versionCode=37
+author=rrr333nnn333, KOWX712, sidex15, simonpunk@gitlab.com & Bikram-Agarwal
 description=[Module Status: ❓, SuSFS Patches: ❓] A SuSFS/KernelSU module for SuSFS patched kernels
 updateJson=https://raw.githubusercontent.com/bikram-agarwal/BRENE/main/update.json
