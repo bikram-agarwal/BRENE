@@ -22,8 +22,7 @@ sed -i "s|^description=.*|description=${status}${description}|" ${MODDIR}/module
 
 
 # Enable kernel umount
-# ${KSU_BIN} feature set kernel_umount ${config_kernel_umount}
-${KSU_BIN} feature set kernel_umount 1 # Always enable kernel umount feature at boot
+${KSU_BIN} feature set kernel_umount ${config_kernel_umount}
 ${KSU_BIN} feature save
 
 
@@ -189,7 +188,7 @@ if [[ $config_hide_sdcard_android_data == 1 ]]; then
 	done
 
 	for i in $(pm list packages -3 | cut -d':' -f2); do
-		[ -d "/sdcard/Android/data/$i" ] && ${SUSFS_BIN} add_sus_path_loop "/sdcard/Android/data/$i"
+		[ -d "/sdcard/Android/data/$i" ] && ${SUSFS_BIN} add_sus_path "/sdcard/Android/data/$i"
 	done
 fi
 
