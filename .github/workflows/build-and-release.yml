@@ -28,6 +28,14 @@ jobs:
           echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
           echo "Using version=$VERSION from module.prop, setting versionCode=$VERSION_CODE"
 
+      - name: Add fork author to module.prop
+        run: |
+          if grep -q 'Bikram-Agarwal' module.prop; then
+            exit 0
+          fi
+          sed -i 's/ & /, /g' module.prop
+          sed -i '/^author=/ s/$/ \& Bikram-Agarwal/' module.prop
+
       - name: Create module zip
         run: |
           set +x
