@@ -2,6 +2,9 @@ name: Build module zip and publish release
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['module.prop']
 
 jobs:
   build-and-release:
@@ -15,8 +18,31 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref }}
 
+      - name: Check if build needed
+        id: check
+        run: |
+          VERSION=$(grep '^version=' module.prop | cut -d= -f2-)
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          PAYLOAD=$(echo "$RESPONSE" | sed '$d')
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "No latest release or API error (HTTP $HTTP_CODE), will build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          LATEST_TAG=$(echo "$PAYLOAD" | jq -r '.tag_name // empty')
+          if [ "$LATEST_TAG" = "$VERSION" ]; then
+            echo "module.prop version $VERSION matches latest release tag, skipping build"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "module.prop version $VERSION differs from latest release ($LATEST_TAG), will build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Read version and set versionCode in module.prop for zip
         id: version
+        if: steps.check.outputs.should_build == 'true'
         run: |
           set +x
           VERSION=$(grep '^version=' module.prop | cut -d= -f2-)
@@ -29,6 +55,7 @@ jobs:
           echo "Using version=$VERSION from module.prop, setting versionCode=$VERSION_CODE"
 
       - name: Add fork author to module.prop
+        if: steps.check.outputs.should_build == 'true'
         run: |
           if grep -q 'Bikram-Agarwal' module.prop; then
             exit 0
@@ -37,6 +64,7 @@ jobs:
           sed -i '/^author=/ s/$/ \& Bikram-Agarwal/' module.prop
 
       - name: Create module zip
+        if: steps.check.outputs.should_build == 'true'
         run: |
           set +x
           zip -r "BRENE-${{ steps.version.outputs.version }}.zip" . \
@@ -47,6 +75,7 @@ jobs:
           ls -la "BRENE-${{ steps.version.outputs.version }}.zip"
 
       - name: Create release
+        if: steps.check.outputs.should_build == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
@@ -56,6 +85,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fetch release body and update changelog.md
+        if: steps.check.outputs.should_build == 'true'
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
@@ -81,6 +111,7 @@ jobs:
           rm -f changelog_section.md
 
       - name: Write update.json and push
+        if: steps.check.outputs.should_build == 'true'
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
