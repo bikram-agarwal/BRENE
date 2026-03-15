@@ -28,7 +28,7 @@ if [ -z ${KSU} ]; then
 	abort '[❌] SuSFS is only for KernelSU or forks!'
 fi
 
-if [ ${KSU_KERNEL_VER_CODE} -ge 20000 ]; then
+if [ ${KSU_KERNEL_VER_CODE} -ge 32336 ]; then
 	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
 	abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
