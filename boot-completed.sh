@@ -112,11 +112,6 @@ fi
 ## First we need to wait until files are accessible in /sdcard ##
 until [ -d /sdcard/Android ]; do sleep 1; done
 
-## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard is ##
-${SUSFS_BIN} set_sdcard_root_path /sdcard
-## Next we need to set the path of /sdcard/ to tell kernel where the actual /sdcard/Android/data is ##
-${SUSFS_BIN} set_android_data_root_path /sdcard/Android/data
-
 # Load custom_sus_map.txt
 if [ -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
 	while IFS= read -r i; do
