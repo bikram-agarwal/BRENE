@@ -1,12 +1,13 @@
 # Sync this fork's main with upstream (rrr333nnn333/BRENE) main.
-# Run on a schedule or manually. After sync, run "Build module zip and publish release" when you want to build.
+# Use a PAT in SYNC_PAT so a real push (when upstream had changes) triggers
+# "Build module zip and publish release" when the diff touches module.prop.
 name: Sync upstream main
 
 on:
   workflow_dispatch:
   schedule:
-    # Run daily at 06:00 UTC
-    - cron: '0 6 * * *'
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
 
 jobs:
   sync:
@@ -17,7 +18,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SYNC_PAT }}
           ref: main
           fetch-depth: 0
 
@@ -32,5 +33,3 @@ jobs:
 
       - name: Push to origin main
         run: git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
