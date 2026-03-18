@@ -15,7 +15,7 @@ if [[ $config_custom_uname_spoofing == 1 ]]; then
 elif [[ $config_uname_spoofing == 1 ]]; then
 	kernel_version=$(uname -r | cut -d'-' -f1)
 	android_release=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
-	${SUSFS_BIN} set_uname "${kernel_version}-${android_release}-9-g690101101069" '#1 SMP PREEMPT Mon Jan 1 18:00:00 UTC 2010'
+	${SUSFS_BIN} set_uname "${kernel_version}-${android_release}-9-g690101101069" "#1 SMP PREEMPT $(resetprop ro.build.date)"
 fi
 
 
