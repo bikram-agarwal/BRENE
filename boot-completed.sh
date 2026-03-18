@@ -106,13 +106,6 @@ fi
 until [ -d "/sdcard/Android" ]; do sleep 1; done
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
-${SUSFS_BIN} add_sus_path_loop /sdcard/TWRP
-${SUSFS_BIN} add_sus_path_loop /sdcard/MT2
-${SUSFS_BIN} add_sus_path_loop /sdcard/AppManager
-${SUSFS_BIN} add_sus_path_loop /sdcard/Android/data/io.github.muntashirakon.AppManager
-${SUSFS_BIN} add_sus_path_loop /sdcard/Android/media/io.github.muntashirakon.AppManager
-${SUSFS_BIN} add_sus_path_loop /data/local/tmp/main.jar
-
 if [[ $config_hide_rooted_app_folders == 1 ]]; then
 	[ -d /sdcard/MT2 ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/MT2
 	[ -d /sdcard/rlgg ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/rlgg
