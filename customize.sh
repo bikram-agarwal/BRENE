@@ -46,6 +46,7 @@ fi
 cp -f ${MODPATH}/tools/susfs ${DEST_BIN_DIR}
 chmod 755 ${DEST_BIN_DIR}/susfs
 chmod 644 ${MODPATH}/post-fs-data.sh ${MODPATH}/service.sh ${MODPATH}/uninstall.sh ${MODPATH}/boot-completed.sh
+ln -f -s ${DEST_BIN_DIR}/susfs ${DEST_BIN_DIR}/sus # For development
 
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
 if [ -n ${susfs_ver} ]; then
