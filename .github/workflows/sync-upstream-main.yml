@@ -1,10 +1,22 @@
-# Sync this fork's main with upstream (rrr333nnn333/BRENE) main.
-# Use a PAT in SYNC_PAT so a real push (when upstream had changes) triggers
-# "Build module zip and publish release" when the diff touches module.prop.
+# Sync this fork's main with upstream (rrr333nnn333/BRENE) main only when upstream
+# has a new stable GitHub Release (GET .../releases/latest; prereleases are not "latest").
+#
+# State: repository Actions variable UPSTREAM_LAST_SYNCED_RELEASE (on this fork) stores the
+# upstream release tag_name last merged. The workflow sets it after a successful push.
+# Optional: create or set that variable manually to the current upstream latest tag first if
+# your main already matches upstream and you want to avoid one redundant merge on first run.
+#
+# Use a PAT in SYNC_PAT so a real push triggers "Build module zip and publish release" when
+# the diff touches module.prop. GITHUB_TOKEN needs actions:write to read/update the variable.
 name: Sync upstream main
 
 on:
   workflow_dispatch:
+    inputs:
+      force_sync:
+        description: Merge and push even if upstream latest release tag matches UPSTREAM_LAST_SYNCED_RELEASE
+        type: boolean
+        default: false
   schedule:
     # Run every 6 hours
     - cron: '0 */6 * * *'
@@ -14,8 +26,54 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
+      - name: Check upstream release gate
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_SYNC_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.force_sync || false }}
+        run: |
+          set -euo pipefail
+          UPSTREAM_REPO="rrr333nnn333/BRENE"
+          RESPONSE=$(curl -sS -w "\n%{http_code}" "https://api.github.com/repos/${UPSTREAM_REPO}/releases/latest")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          PAYLOAD=$(echo "$RESPONSE" | sed '$d')
+          FORCE_SYNC=false
+          if [ "$FORCE_SYNC_FLAG" = "true" ]; then FORCE_SYNC=true; fi
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Upstream releases/latest returned HTTP ${HTTP_CODE}; not merging (no release or API error)."
+            exit 0
+          fi
+          LATEST_TAG=$(printf '%s' "$PAYLOAD" | jq -r '.tag_name // empty')
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "No tag_name in release payload; not merging."
+            exit 0
+          fi
+
+          PREVIOUS_TAG=""
+          set +e
+          PREVIOUS_TAG=$(gh variable get UPSTREAM_LAST_SYNCED_RELEASE --repo "${GITHUB_REPOSITORY}" 2>/dev/null | tr -d '\r')
+          VAR_EXIT=$?
+          set -e
+          if [ "$VAR_EXIT" -ne 0 ]; then
+            PREVIOUS_TAG=""
+          fi
+
+          if [ "$LATEST_TAG" = "$PREVIOUS_TAG" ] && [ "$FORCE_SYNC" != "true" ]; then
+            echo "Already synced for upstream release ${LATEST_TAG}; skipping."
+            exit 0
+          fi
+
+          echo "Will sync for upstream release tag: ${LATEST_TAG}"
+          {
+            echo "should_sync=true"
+            echo "latest_tag=${LATEST_TAG}"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Checkout main
+        if: steps.gate.outputs.should_sync == 'true'
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.SYNC_PAT }}
@@ -23,7 +81,9 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch and merge upstream main
+        if: steps.gate.outputs.should_sync == 'true'
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/rrr333nnn333/BRENE.git 2>/dev/null || true
@@ -32,4 +92,14 @@ jobs:
           git status
 
       - name: Push to origin main
+        if: steps.gate.outputs.should_sync == 'true'
         run: git push origin main
+
+      - name: Record upstream release tag
+        if: steps.gate.outputs.should_sync == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.gate.outputs.latest_tag }}"
+          gh variable set UPSTREAM_LAST_SYNCED_RELEASE --body "$TAG" --repo "${GITHUB_REPOSITORY}"
