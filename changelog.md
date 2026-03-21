@@ -1,3 +1,7 @@
+## v0.0.40
+
+**Full Changelog**: https://github.com/bikram-agarwal/BRENE/compare/v0.0.39...v0.0.40
+
 ## v0.0.39
 
 **Full Changelog**: https://github.com/bikram-agarwal/BRENE/compare/v0.0.38...v0.0.39
