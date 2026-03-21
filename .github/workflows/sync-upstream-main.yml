@@ -1,8 +1,9 @@
 # Sync this fork's main with upstream (rrr333nnn333/BRENE) main only when upstream
 # has a new stable GitHub Release (GET .../releases/latest; prereleases are not "latest").
 #
-# State: repository Actions variable UPSTREAM_LAST_SYNCED_RELEASE (on this fork) stores the
-# upstream release tag_name last merged. The workflow sets it after a successful push.
+# State (fork repository Actions variables, set after a successful push):
+# - UPSTREAM_LAST_SYNCED_RELEASE: upstream tag_name from the same releases/latest response.
+# - UPSTREAM_LAST_RELEASE_BODY: that release's .body for build-and-release (GitHub max ~48 KiB).
 # Optional: create or set that variable manually to the current upstream latest tag first if
 # your main already matches upstream and you want to avoid one redundant merge on first run.
 #
@@ -66,6 +67,8 @@ jobs:
           fi
 
           echo "Will sync for upstream release tag: ${LATEST_TAG}"
+          printf '%s' "$PAYLOAD" | jq -r '.body // empty' > "${RUNNER_TEMP}/upstream_release_body.md"
+
           {
             echo "should_sync=true"
             echo "latest_tag=${LATEST_TAG}"
@@ -94,11 +97,32 @@ jobs:
         if: steps.gate.outputs.should_sync == 'true'
         run: git push origin main
 
-      - name: Record upstream release tag
+      - name: Record upstream release tag and body
         if: steps.gate.outputs.should_sync == 'true'
         env:
           GH_TOKEN: ${{ secrets.SYNC_PAT }}
         run: |
           set -euo pipefail
           TAG="${{ steps.gate.outputs.latest_tag }}"
+          BODY_FILE="${RUNNER_TEMP}/upstream_release_body.md"
           gh variable set UPSTREAM_LAST_SYNCED_RELEASE --body "$TAG" --repo "${GITHUB_REPOSITORY}"
+
+          if [ ! -f "$BODY_FILE" ]; then
+            touch "$BODY_FILE"
+          fi
+          BODY_JSON=$(jq -n --rawfile value "$BODY_FILE" '{"value": $value}')
+          set +e
+          printf '%s' "$BODY_JSON" | \
+            gh api --method PATCH \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/actions/variables/UPSTREAM_LAST_RELEASE_BODY" \
+              --input -
+          PATCH_EXIT=$?
+          set -e
+          if [ "$PATCH_EXIT" -ne 0 ]; then
+            jq -n --arg name UPSTREAM_LAST_RELEASE_BODY --rawfile value "$BODY_FILE" '{"name": $name, "value": $value}' | \
+              gh api --method POST \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/${GITHUB_REPOSITORY}/actions/variables" \
+                --input -
+          fi
