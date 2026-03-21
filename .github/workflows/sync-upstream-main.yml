@@ -6,8 +6,8 @@
 # Optional: create or set that variable manually to the current upstream latest tag first if
 # your main already matches upstream and you want to avoid one redundant merge on first run.
 #
-# Use a PAT in SYNC_PAT so a real push triggers "Build module zip and publish release" when
-# the diff touches module.prop. GITHUB_TOKEN needs actions:write to read/update the variable.
+# Use a PAT in SYNC_PAT for push (so other workflows run) and for gh variable get/set:
+# GITHUB_TOKEN often cannot write repository Actions variables (403 from the API).
 name: Sync upstream main
 
 on:
@@ -26,12 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
     steps:
       - name: Check upstream release gate
         id: gate
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SYNC_PAT }}
           FORCE_SYNC_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.force_sync || false }}
         run: |
           set -euo pipefail
@@ -98,7 +97,7 @@ jobs:
       - name: Record upstream release tag
         if: steps.gate.outputs.should_sync == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SYNC_PAT }}
         run: |
           set -euo pipefail
           TAG="${{ steps.gate.outputs.latest_tag }}"
