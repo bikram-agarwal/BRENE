@@ -131,5 +131,9 @@ elif [[ $config_uname_spoofing == 1 ]]; then
 fi
 
 
+# # Disable susfs kernel log ##
+[[ $config_enable_log == 1 ]] && ${SUSFS_BIN} enable_log 1 || ${SUSFS_BIN} enable_log 0
+
+
 echo "EOF" > "${PERSISTENT_DIR}/log.txt"
 # EOF
