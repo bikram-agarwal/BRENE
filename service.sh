@@ -19,10 +19,6 @@ PERSISTENT_DIR=/data/adb/brene
 # EOF
 
 
-# # Disable susfs kernel log ##
-[[ $config_enable_log == 1 ]] && ${SUSFS_BIN} enable_log 1 || ${SUSFS_BIN} enable_log 0
-
-
 ## Props ##
 resetprop -w sys.boot_completed 0
 
