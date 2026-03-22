@@ -1,3 +1,12 @@
+## v0.0.41
+
+- webui: improve some descriptions
+- improve: Uname Spoofing
+- improve: move SuSFS logs toggle logic to post-fs-data mode (post-fs-data.sh)
+- release: v0.0.41
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.40...v0.0.41
+
 ## v0.0.40
 
 - remove: duplicate code
