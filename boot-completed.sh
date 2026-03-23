@@ -146,23 +146,6 @@ if [[ $config_non_standard_sdcard_android_paths_hiding == 1 ]]; then
 	done
 fi
 
-if [[ $config_hide_rooted_app_folders == 1 ]]; then
-	[ -d /sdcard/MT2 ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/MT2
-	[ -d /sdcard/rlgg ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/rlgg
-	[ -d /sdcard/xinhao ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/xinhao
-	[ -d /sdcard/OhMyFont ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/OhMyFont
-	[ -d /sdcard/AppManager ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/AppManager
-	[ -d /sdcard/DataBackup ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/DataBackup
-	[ -d /sdcard/KernelFlasher ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/KernelFlasher
-	[ -d /sdcard/Android/fas-rs ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Android/fas-rs
-fi
-
-if [[ $config_hide_custom_recovery_folders == 1 ]]; then
-	[ -d /sdcard/Fox ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/Fox
-	[ -d /sdcard/PBRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/PBRP
-	[ -d /sdcard/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /sdcard/TWRP
-	[ -d /storage/emulated/TWRP ] && ${SUSFS_BIN} add_sus_path_loop /storage/emulated/TWRP
-fi
 
 if [[ $config_hide_data_local_tmp == 1 ]]; then
 	for i in $(ls /data/local/tmp); do

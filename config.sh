@@ -2,9 +2,7 @@ config_selinux=1
 config_kernel_umount=1
 
 config_enable_avc_log_spoofing=0
-config_hide_custom_recovery_folders=0
 config_hide_data_local_tmp=0
-config_hide_rooted_app_folders=0
 config_hide_sus_mnts_for_non_su_procs=0
 config_uname_spoofing=0
 config_hide_zygisk_modules=0
