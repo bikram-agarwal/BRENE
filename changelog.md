@@ -1,3 +1,17 @@
+## v0.0.42
+
+- improve: symlink creation
+- improve: support resetprop [-c|--compact] (Compact property area memory)
+- webui: improve descriptions
+- remove: "Rooted Apps Folders Hiding" and "Custom Recovery Folders Hiding" toggles
+- add: hot install support
+- improve: symlink creation again
+- improve: sync with upstream (ksu_module_susfs)
+- improve: update susfs binary
+- release: v0.0.42
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.41...v0.0.42
+
 ## v0.0.41
 
 - webui: improve some descriptions
