@@ -18,8 +18,6 @@ const configs = [
 	{id: 'hide_data_local_tmp'},
 	// { id: 'hide_modules_img' },
 	{id: 'hide_zygisk_modules'},
-	{id: 'hide_custom_recovery_folders'},
-	{id: 'hide_rooted_app_folders'},
 	{id: 'hide_sdcard_android_data'},
 	{
 		id: 'kernel_umount',
