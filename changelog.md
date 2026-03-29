@@ -1,3 +1,14 @@
+## v0.0.43
+
+- improve: move resetprop [-c|--compact] to boot-completed.sh
+- remove: old code (Hexpatch)
+- improve: sync with upstream (ksu_module_susfs)
+- webui: add repository links for BRENE and SuSFS titles
+- improve: use [ -e ] instead of [ -d ] [ -f ] and use "source" instead of "."
+- release: v0.0.43
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.42...v0.0.43
+
 ## v0.0.42
 
 - improve: symlink creation
