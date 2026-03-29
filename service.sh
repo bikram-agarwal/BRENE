@@ -2,22 +2,8 @@ MODDIR=${0%/*}
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 # Load config
-[ -f ${PERSISTENT_DIR}/config.sh ] && . ${PERSISTENT_DIR}/config.sh
-
-. ${MODDIR}/utils.sh
-
-## Hexpatch prop name for newer pixel device ##
-# cat <<EOF >/dev/null
-# # Remember the length of search value and replace value has to be the same #
-# resetprop -n "ro.boot.verifiedbooterror" "0"
-# susfs_hexpatch_prop_name "ro.boot.verifiedbooterror" "verifiedbooterror" "hello_my_newworld"
-
-# resetprop -n "ro.boot.verifyerrorpart" "true"
-# susfs_hexpatch_prop_name "ro.boot.verifyerrorpart" "verifyerrorpart" "letsgopartyyeah"
-
-# resetprop --delete "crashrecovery.rescue_boot_count"
-# EOF
-
+[ -e ${PERSISTENT_DIR}/config.sh ] && source ${PERSISTENT_DIR}/config.sh
+source ${MODDIR}/utils.sh
 
 ## Props ##
 resetprop -w sys.boot_completed 0
@@ -67,7 +53,11 @@ if_prop_value_exits_resetprop_n "ro.boot.warranty_bit" "0"
 fingerprint=$(resetprop ro.build.fingerprint)
 resetprop_n "ro.build.fingerprint" "${fingerprint//userdebug/user}"
 
-resetprop -c 2>/dev/null || true
+## Delete some prop names for newer pixel device ##
+resetprop --delete "ro.boot.verifiedbooterror"
+resetprop --delete "ro.boot.verifyerrorpart"
+resetprop --delete "crashrecovery.rescue_boot_count"
+
 
 echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
 # EOF

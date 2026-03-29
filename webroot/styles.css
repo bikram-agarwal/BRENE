@@ -116,6 +116,9 @@ md-switch {
 .preload-hidden {
 	display: none;
 }
+a {
+	color: inherit;
+}
 /* Custom uname spoofing */
 .custom-uname-content {
 	display: flex;
