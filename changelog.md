@@ -1,3 +1,15 @@
+## v0.0.44
+
+- webui: improve smoothness using async functions
+- webui: improve Chinese WebUI, thanks to Su XiaoMing @Saturday777G (Telegram user)
+- update: config.sh
+- webui: a few improvements
+- improve: module status
+- add: a symlink (ksu_susfs) to the susfs binary for compatibility
+- release: v0.0.44
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.43...v0.0.44
+
 ## v0.0.43
 
 - improve: move resetprop [-c|--compact] to boot-completed.sh
