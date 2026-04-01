@@ -9,15 +9,12 @@ source ${MODDIR}/utils.sh
 # Update Description
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
-if [ -n ${susfs_ver} ]; then
-	# if [ -e "/data/adb/modules/rezygisk" ] && [ ! -f "/data/adb/modules/rezygisk/disable" ]; then
-	# else
-	# fi
-	status="[Module Status: ✅, SuSFS Patches: ${susfs_ver}+]\\\\n"
+if [ -n "${susfs_ver}" ]; then
+	status="[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}+]\\\\n"
 else
-	status="[Module Status: ❌, SuSFS Patches: ❌]\\\\n"
+	status="[Module Status: ❌ | SuSFS Patches: ❌]\\\\n"
 fi
-sed -i "s|^description=.*|description=${status}${description}|" ${MODDIR}/module.prop
+sed -i "s#^description=.*#description=${status}${description}#" "${MODDIR}/module.prop"
 
 
 # Enable kernel umount
