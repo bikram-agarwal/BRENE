@@ -59,6 +59,17 @@ exec('susfs show enabled_features').then(result => {
 	container.innerText = result.stdout.replaceAll('CONFIG_KSU_SUSFS_', '')
 })
 
+// Load logs
+exec(`cat ${PERSISTENT_DIR}/logs.txt`).then(result => {
+	const container = document.getElementById('logs')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load logs'
+		return
+	}
+	container.innerText = result.stdout
+})
+
 // Load brene version
 exec(`grep "^version=" ${MODDIR}/module.prop | cut -d'=' -f2`).then(result => {
 	const element = document.getElementById('brene-version')

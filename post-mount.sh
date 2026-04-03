@@ -5,7 +5,7 @@
 # PERSISTENT_DIR=/data/adb/brene
 # # Load config
 # [ -e ${PERSISTENT_DIR}/config.sh ] && source ${PERSISTENT_DIR}/config.sh
-
+# source ${MODDIR}/utils.sh
 
 # echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
 # # EOF

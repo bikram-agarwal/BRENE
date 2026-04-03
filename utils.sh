@@ -1,4 +1,6 @@
 PATH=/data/adb/ksu/bin:$PATH
+PERSISTENT_DIR=/data/adb/brene
+SUSFS_BIN=/data/adb/ksu/bin/susfs
 
 ## susfs_clone_perm <file/or/dir/perm/to/be/changed> <file/or/dir/to/clone/from>
 susfs_clone_perm() {
@@ -34,5 +36,30 @@ if_prop_value_exits_resetprop_n() {
 
 #   [[ "$(resetprop ${PROP_NAME})" = *"${CONTAINS_VALUE}"* ]] && resetprop -n "${PROP_NAME}" "${NEW_VALUE}"
 # }
+
+brene_sus_path() {
+	${SUSFS_BIN} add_sus_path "$1" && echo "[sus_path]: $1" >> "${PERSISTENT_DIR}/logs.txt"
+}
+brene_sus_path_loop() {
+	${SUSFS_BIN} add_sus_path_loop "$1" && echo "[sus_path_loop]: $1" >> "${PERSISTENT_DIR}/logs.txt"
+}
+brene_sus_map() {
+	${SUSFS_BIN} add_sus_map "$1" && echo "[sus_map]: $1" >> "${PERSISTENT_DIR}/logs.txt"
+}
+brene_set_uname() {
+	${SUSFS_BIN} set_uname "$1" "$2" && echo "[set_uname]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 # EOF
