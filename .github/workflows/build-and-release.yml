@@ -18,6 +18,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref }}
 
+      - name: Resolve default branch (release and push only on default)
+        id: branch_gate
+        run: |
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          CURRENT="${{ github.ref_name }}"
+          if [ "$CURRENT" = "$DEFAULT_BRANCH" ]; then
+            echo "on_default_branch=true" >> "$GITHUB_OUTPUT"
+            echo "On default branch ($DEFAULT_BRANCH): GitHub release and git push will run after build."
+          else
+            echo "on_default_branch=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Dry-run: branch '$CURRENT' is not the default ('$DEFAULT_BRANCH'). Build steps still run; release creation and push are skipped."
+          fi
+
       - name: Check if build needed
         id: check
         run: |
@@ -41,6 +54,7 @@ jobs:
           fi
 
       - name: Read version and set versionCode in module.prop for zip
+        # BRENE keeps versionCode as 1, so I have to edit it to match the version
         id: version
         if: steps.check.outputs.should_build == 'true'
         run: |
@@ -49,19 +63,27 @@ jobs:
           RAW=$(echo "$VERSION" | sed 's/^v//' | tr -d '.')
           VERSION_CODE=$((10#${RAW:-0}))
           sed -i "s/^versionCode=.*/versionCode=${VERSION_CODE}/" module.prop
-          sed -i "s|^updateJson=.*|updateJson=https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/update.json|" module.prop
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
           echo "Using version=$VERSION from module.prop, setting versionCode=$VERSION_CODE"
 
-      - name: Add fork author to module.prop
+      - name: Ensuring prop format
         if: steps.check.outputs.should_build == 'true'
+        env:
+          EXPECTED_UPDATE_JSON: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/update.json
         run: |
-          if grep -q 'Bikram-Agarwal' module.prop; then
-            exit 0
+          sed -i '/^name=/ s/\.BRENE/BRENE/g' module.prop
+          if ! grep -q 'Bikram-Agarwal' module.prop; then
+            sed -i 's/ & /, /g' module.prop
+            sed -i '/^author=/ s/$/ \& Bikram-Agarwal/' module.prop
           fi
-          sed -i 's/ & /, /g' module.prop
-          sed -i '/^author=/ s/$/ \& Bikram-Agarwal/' module.prop
+          if grep -q '^updateJson=' module.prop; then
+            sed -i "s|^updateJson=.*|updateJson=${EXPECTED_UPDATE_JSON}|" module.prop
+          else
+            printf '\nupdateJson=%s\n' "${EXPECTED_UPDATE_JSON}" >> module.prop
+          fi
+          echo "--- module.prop (right before zip build) ---"
+          cat module.prop
 
       - name: Create module zip
         if: steps.check.outputs.should_build == 'true'
@@ -105,29 +127,19 @@ jobs:
           echo "use_upstream_body=true" >> "$GITHUB_OUTPUT"
           echo "body_path=${BODY_FILE}" >> "$GITHUB_OUTPUT"
 
-      - name: Create release (upstream changelog)
-        if: steps.check.outputs.should_build == 'true' && steps.upstream_notes.outputs.use_upstream_body == 'true'
+      - name: Create GitHub release
+        if: steps.check.outputs.should_build == 'true' && steps.branch_gate.outputs.on_default_branch == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           files: "BRENE-${{ steps.version.outputs.version }}.zip"
-          body_path: ${{ steps.upstream_notes.outputs.body_path }}
-          generate_release_notes: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create release (generated notes)
-        if: steps.check.outputs.should_build == 'true' && steps.upstream_notes.outputs.use_upstream_body != 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          files: "BRENE-${{ steps.version.outputs.version }}.zip"
-          generate_release_notes: true
+          generate_release_notes: ${{ steps.upstream_notes.outputs.use_upstream_body != 'true' }}
+          body_path: ${{ steps.upstream_notes.outputs.use_upstream_body == 'true' && steps.upstream_notes.outputs.body_path || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fetch release body and update changelog.md
-        if: steps.check.outputs.should_build == 'true'
+        if: steps.check.outputs.should_build == 'true' && steps.branch_gate.outputs.on_default_branch == 'true'
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
@@ -151,9 +163,13 @@ jobs:
           fi
           mv changelog.md.tmp changelog.md
           rm -f changelog_section.md
+          echo "--- changelog.md (right before update.json) ---"
+          cat changelog.md
 
       - name: Write update.json and push
         if: steps.check.outputs.should_build == 'true'
+        env:
+          ON_DEFAULT_BRANCH: ${{ steps.branch_gate.outputs.on_default_branch }}
         run: |
           set +x
           VERSION="${{ steps.version.outputs.version }}"
@@ -167,6 +183,11 @@ jobs:
             --arg zipUrl "$ZIP_URL" \
             --arg changelog "$CHANGELOG_URL" \
             '{version: $version, versionCode: $versionCode, zipUrl: $zipUrl, changelog: $changelog}' > update.json
+          echo "--- update.json (as would be committed) ---"
+          cat update.json
+          if [ "$ON_DEFAULT_BRANCH" != "true" ]; then
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add module.prop update.json changelog.md
