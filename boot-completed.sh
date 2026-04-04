@@ -59,6 +59,124 @@ if [[ $config_rom_props == 1 ]]; then
 fi
 
 
+#### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
+## First we need to wait until files are accessible in /sdcard ##
+until [ -e "/sdcard/Android" ]; do sleep 1; done
+
+## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
+if [[ $config_non_standard_sdcard_paths_hiding == 1 ]]; then
+	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "Non-standard /sdcard Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
+	standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
+	
+	for i in /sdcard/*; do
+		pass=0
+		for x in $standard_paths; do
+			if [[ "/sdcard/$x" == "$i" ]]; then
+				pass=1
+				break
+			fi
+		done
+
+		if [[ "$pass" == "1" ]]; then
+			continue
+		fi
+
+		brene_sus_path_loop "${i}"
+	done
+fi
+
+if [[ $config_non_standard_sdcard_android_paths_hiding == 1 ]]; then
+	printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "Non-standard /sdcard/Android Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
+	standard_paths="data media obb"
+	
+	for i in /sdcard/Android/*; do
+		pass=0
+		for x in $standard_paths; do
+			if [[ "/sdcard/Android/$x" == "$i" ]]; then
+				pass=1
+				break
+			fi
+		done
+
+		if [[ "$pass" == "1" ]]; then
+			continue
+		fi
+
+		brene_sus_path_loop "${i}"
+	done
+fi
+
+if [[ $config_hide_data_local_tmp == 1 ]]; then
+	printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "/data/local/tmp Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
+	for i in /data/local/tmp/*; do
+		brene_sus_path_loop "${i}"
+	done
+fi
+
+
+## For paths that are read-only all the time, add them via 'add_sus_path' ##
+printf "\n##################\n" >> "${PERSISTENT_DIR}/logs.txt"
+printf "Other Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+printf "\n##################\n" >> "${PERSISTENT_DIR}/logs.txt"
+# brene_sus_path /sys/block/loop0
+brene_sus_path /system/addon.d
+brene_sus_path /vendor/bin/install-recovery.sh
+brene_sus_path /system/bin/install-recovery.sh
+
+if [[ $config_hide_sdcard_android_data == 1 ]]; then
+	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "/sdcard/Android/data Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
+	while true; do
+		items=$(ls /sdcard/Android/data | wc -l)
+		sleep 10
+		[[ "${items}" -eq "$(ls /sdcard/Android/data | wc -l)" ]] && break
+	done
+
+	for i in $(pm list packages -3 | cut -d':' -f2); do
+		[ -e "/sdcard/Android/data/$i" ] && brene_sus_path "/sdcard/Android/data/$i"
+	done
+fi
+
+
+# Load custom_sus_map.txt
+if [ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
+	while IFS= read -r i; do
+		# Skip empty lines or comments
+		[[ -z "${i}" || "${i}" == "#"* ]] && continue
+		[ -e "${i}" ] && brene_sus_map "${i}"
+	done < "${PERSISTENT_DIR}/custom_sus_map.txt"
+fi
+
+# Load custom_sus_path.txt
+if [ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]; then
+	while IFS= read -r i; do
+		# Skip empty lines or comments
+		[[ -z "${i}" || "${i}" == "#"* ]] && continue
+		[ -e "${i}" ] && brene_sus_path "${i}"
+	done < "${PERSISTENT_DIR}/custom_sus_path.txt"
+fi
+
+# Load custom_sus_path_loop.txt
+if [ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]; then
+	while IFS= read -r i; do
+		# Skip empty lines or comments
+		[[ -z "${i}" || "${i}" == "#"* ]] && continue
+		[ -e "${i}" ] && brene_sus_path_loop "${i}"
+	done < "${PERSISTENT_DIR}/custom_sus_path_loop.txt"
+fi
+
+
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
 ##   Since some target path may be mounted by ksu, and make sure the
@@ -79,121 +197,29 @@ fi
 ##         busybox nsenter -t <pid_of_mnt_ns_the_target_dev_number_belongs_to> -m ksu_susfs add_sus_map <target_path>
 
 ## Hide some zygisk modules ##
-# ${SUSFS_BIN} add_sus_map /data/adb/modules/my_module/zygisk/arm64-v8a.so
+# brene_sus_map /data/adb/modules/my_module/zygisk/arm64-v8a.so
 if [[ $config_hide_zygisk_modules == 1 ]]; then
+	printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "Zygisk Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
 	for i in $(find /data/adb/modules -name *.so | grep /zygisk/); do
-		${SUSFS_BIN} add_sus_map "${i}"
+		brene_sus_map "${i}"
 	done
 fi
 
 if [[ $config_hide_injections == 1 ]]; then
+	printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+	printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
+
 	for i in $(ls /data/adb/modules); do
 		if [ -e "/data/adb/modules/${i}/system" ]; then
 			for x in $(find "/data/adb/modules/${i}/system" -type f -name "*.*"); do
-				${SUSFS_BIN} add_sus_map "${x}"
+				brene_sus_map "${x}"
 			done
 		fi
 	done
-fi
-
-
-#### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
-## First we need to wait until files are accessible in /sdcard ##
-until [ -e "/sdcard/Android" ]; do sleep 1; done
-
-## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
-if [[ $config_non_standard_sdcard_paths_hiding == 1 ]]; then
-	standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
-	
-	for i in /sdcard/*; do
-		pass=0
-		for x in $standard_paths; do
-			if [[ "/sdcard/$x" == "$i" ]]; then
-				pass=1
-				break
-			fi
-		done
-
-		if [[ "$pass" == "1" ]]; then
-			continue
-		fi
-
-		${SUSFS_BIN} add_sus_path_loop "$i"
-	done
-fi
-
-if [[ $config_non_standard_sdcard_android_paths_hiding == 1 ]]; then
-	standard_paths="data media obb"
-	
-	for i in /sdcard/Android/*; do
-		pass=0
-		for x in $standard_paths; do
-			if [[ "/sdcard/Android/$x" == "$i" ]]; then
-				pass=1
-				break
-			fi
-		done
-
-		if [[ "$pass" == "1" ]]; then
-			continue
-		fi
-
-		${SUSFS_BIN} add_sus_path_loop "$i"
-	done
-fi
-
-
-if [[ $config_hide_data_local_tmp == 1 ]]; then
-	for i in $(ls /data/local/tmp); do
-		${SUSFS_BIN} add_sus_path_loop "/data/local/tmp/${i}"
-	done
-fi
-
-
-## For paths that are read-only all the time, add them via 'add_sus_path' ##
-# ${SUSFS_BIN} add_sus_path /sys/block/loop0
-${SUSFS_BIN} add_sus_path /system/addon.d
-${SUSFS_BIN} add_sus_path /vendor/bin/install-recovery.sh
-${SUSFS_BIN} add_sus_path /system/bin/install-recovery.sh
-
-if [[ $config_hide_sdcard_android_data == 1 ]]; then
-	while true; do
-		items=$(ls /sdcard/Android/data | wc -l)
-		sleep 10
-		[[ "${items}" -eq "$(ls /sdcard/Android/data | wc -l)" ]] && break
-	done
-
-	for i in $(pm list packages -3 | cut -d':' -f2); do
-		[ -e "/sdcard/Android/data/$i" ] && ${SUSFS_BIN} add_sus_path "/sdcard/Android/data/$i"
-	done
-fi
-
-
-# Load custom_sus_map.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && ${SUSFS_BIN} add_sus_map "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_map.txt"
-fi
-
-# Load custom_sus_path.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]; then
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && ${SUSFS_BIN} add_sus_path "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_path.txt"
-fi
-
-# Load custom_sus_path_loop.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]; then
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && ${SUSFS_BIN} add_sus_path_loop "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_path_loop.txt"
 fi
 
 
