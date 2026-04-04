@@ -1,3 +1,11 @@
+## v0.0.45
+
+- webui: a few improvements
+- add: BRENE logs
+- release: v0.0.45
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.44...v0.0.45
+
 ## v0.0.44
 
 - webui: improve smoothness using async functions
