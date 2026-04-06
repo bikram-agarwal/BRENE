@@ -232,6 +232,15 @@ sed -i "s/^config_uname_kernel_release=.*/config_uname_kernel_release='${config_
 sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_uname_kernel_version}'/" ${PERSISTENT_DIR}/config.sh
 
 
+# Remove "/sdcard/..5.u.S"
+while true; do
+	if [[ -e "/sdcard/..5.u.S" ]]; then
+		rm -rf "/sdcard/..5.u.S"
+	fi
+	sleep 5
+done &
+
+
 resetprop -c 2>/dev/null || true
 
 echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
