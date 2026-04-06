@@ -223,6 +223,15 @@ if [[ $config_hide_injections == 1 ]]; then
 fi
 
 
+# Uname Spoofing
+kernel_version=$(uname -r | cut -d'-' -f1)
+android_release=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+config_uname_kernel_release="${kernel_version}-${android_release}-9-g690101101069"
+config_uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date)"
+sed -i "s/^config_uname_kernel_release=.*/config_uname_kernel_release='${config_uname_kernel_release}'/" ${PERSISTENT_DIR}/config.sh
+sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_uname_kernel_version}'/" ${PERSISTENT_DIR}/config.sh
+
+
 resetprop -c 2>/dev/null || true
 
 echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
