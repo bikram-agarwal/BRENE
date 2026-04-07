@@ -50,7 +50,7 @@ fi
 
 # Remove Play Integrity Fix Props (EXPERIMENTAL)
 if [[ $config_pif_props == 1 ]]; then
-	resetprop | grep -E "pihook|pixelprops" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
+	resetprop | grep -E "pihook|pixelprops|spoof" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
 fi
 
 # Remove Custom ROM Props (EXPERIMENTAL)
@@ -221,6 +221,24 @@ if [[ $config_hide_injections == 1 ]]; then
 		fi
 	done
 fi
+
+
+# Uname Spoofing
+kernel_version=$(uname -r | cut -d'-' -f1)
+android_release=$(${KSU_BIN} boot-info current-kmi | cut -d'-' -f1)
+config_uname_kernel_release="${kernel_version}-${android_release}-9-g690101101069"
+config_uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date)"
+sed -i "s/^config_uname_kernel_release=.*/config_uname_kernel_release='${config_uname_kernel_release}'/" ${PERSISTENT_DIR}/config.sh
+sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_uname_kernel_version}'/" ${PERSISTENT_DIR}/config.sh
+
+
+# Remove "/sdcard/..5.u.S"
+while true; do
+	if [[ -e "/sdcard/..5.u.S" ]]; then
+		rm -rf "/sdcard/..5.u.S"
+	fi
+	sleep 5
+done &
 
 
 resetprop -c 2>/dev/null || true
