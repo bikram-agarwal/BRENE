@@ -1,3 +1,14 @@
+## v0.0.46
+
+- add: a new toggle "Android System Properties Spoofing"
+- improve: "Remove Play Integrity Fix Props" toggle
+- improve: update susfs binary
+- improve: Uname Spoofing
+- improve: remove "/sdcard/..5.u.S" automatically (attack vector)
+- release: v0.0.46
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.45...v0.0.46
+
 ## v0.0.45
 
 - webui: a few improvements
