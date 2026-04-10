@@ -1,3 +1,12 @@
+## v0.0.47
+
+- improve: update susfs binary
+- improve: use inotifyd to improve performance ("/sdcard/..5.u.S")
+- improve: use "[[ ]]" instead of "[ ]"
+- release: v0.0.47
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.46...v0.0.47
+
 ## v0.0.46
 
 - add: a new toggle "Android System Properties Spoofing"
