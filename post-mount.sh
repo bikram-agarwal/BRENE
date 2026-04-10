@@ -4,7 +4,7 @@
 # SUSFS_BIN=/data/adb/ksu/bin/susfs
 # PERSISTENT_DIR=/data/adb/brene
 # # Load config
-# [ -e ${PERSISTENT_DIR}/config.sh ] && source ${PERSISTENT_DIR}/config.sh
+# [[ -e ${PERSISTENT_DIR}/config.sh ]] && source ${PERSISTENT_DIR}/config.sh
 # source ${MODDIR}/utils.sh
 
 # echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
