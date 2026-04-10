@@ -3,13 +3,13 @@ KSU_BIN=/data/adb/ksu/bin/ksud
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 # Load config
-[ -e ${PERSISTENT_DIR}/config.sh ] && source ${PERSISTENT_DIR}/config.sh
+[[ -e ${PERSISTENT_DIR}/config.sh ]] && source ${PERSISTENT_DIR}/config.sh
 source ${MODDIR}/utils.sh
 
 # Update Description
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
 susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
-if [ -n "${susfs_ver}" ]; then
+if [[ -n "${susfs_ver}" ]]; then
 	status="[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}+]\\\\n"
 else
 	status="[Module Status: ❌ | SuSFS Patches: ❌]\\\\n"
@@ -61,7 +61,7 @@ fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
-until [ -e "/sdcard/Android" ]; do sleep 1; done
+until [[ -e "/sdcard/Android" ]]; do sleep 1; done
 
 # Remove "/sdcard/..5.u.S"
 rm -rf "/sdcard/..5.u.S"
@@ -149,35 +149,35 @@ if [[ $config_hide_sdcard_android_data == 1 ]]; then
 	done
 
 	for i in $(pm list packages -3 | cut -d':' -f2); do
-		[ -e "/sdcard/Android/data/$i" ] && brene_sus_path "/sdcard/Android/data/$i"
+		[[ -e "/sdcard/Android/data/$i" ]] && brene_sus_path "/sdcard/Android/data/$i"
 	done
 fi
 
 
 # Load custom_sus_map.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]; then
+if [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]]; then
 	while IFS= read -r i; do
 		# Skip empty lines or comments
 		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && brene_sus_map "${i}"
+		[[ -e "${i}" ]] && brene_sus_map "${i}"
 	done < "${PERSISTENT_DIR}/custom_sus_map.txt"
 fi
 
 # Load custom_sus_path.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]; then
+if [[ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]]; then
 	while IFS= read -r i; do
 		# Skip empty lines or comments
 		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && brene_sus_path "${i}"
+		[[ -e "${i}" ]] && brene_sus_path "${i}"
 	done < "${PERSISTENT_DIR}/custom_sus_path.txt"
 fi
 
 # Load custom_sus_path_loop.txt
-if [ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]; then
+if [[ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]]; then
 	while IFS= read -r i; do
 		# Skip empty lines or comments
 		[[ -z "${i}" || "${i}" == "#"* ]] && continue
-		[ -e "${i}" ] && brene_sus_path_loop "${i}"
+		[[ -e "${i}" ]] && brene_sus_path_loop "${i}"
 	done < "${PERSISTENT_DIR}/custom_sus_path_loop.txt"
 fi
 
@@ -219,7 +219,7 @@ if [[ $config_hide_injections == 1 ]]; then
 	printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
 	for i in $(ls /data/adb/modules); do
-		if [ -e "/data/adb/modules/${i}/system" ]; then
+		if [[ -e "/data/adb/modules/${i}/system" ]]; then
 			for x in $(find "/data/adb/modules/${i}/system" -type f -name "*.*"); do
 				brene_sus_map "${x}"
 			done
