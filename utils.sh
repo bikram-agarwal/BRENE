@@ -1,6 +1,12 @@
 PATH=/data/adb/ksu/bin:$PATH
-PERSISTENT_DIR=/data/adb/brene
+MODDIR=${0%/*}
+KSU_BIN=/data/adb/ksud
+KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
+PERSISTENT_DIR=/data/adb/brene
+DEST_BIN_DIR=/data/adb/ksu/bin
+
+
 
 ## susfs_clone_perm <file/or/dir/perm/to/be/changed> <file/or/dir/to/clone/from>
 susfs_clone_perm() {
@@ -49,17 +55,3 @@ brene_sus_map() {
 brene_set_uname() {
 	${SUSFS_BIN} set_uname "$1" "$2" && echo "[set_uname]: $1 $2" >> "${PERSISTENT_DIR}/logs.txt"
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-# EOF

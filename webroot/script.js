@@ -6,7 +6,7 @@ document.querySelector('div.preload-hidden').classList.remove('preload-hidden')
 const MODDIR = '/data/adb/modules/brene'
 const PERSISTENT_DIR = '/data/adb/brene'
 const SUSFS_BIN = '/data/adb/ksu/bin/susfs'
-const KSU_BIN = '/data/adb/ksu/bin/ksud'
+const KSU_BIN = '/data/adb/ksud'
 const configs = [
 	// { id: 'hide_modules_img' },
 	{
