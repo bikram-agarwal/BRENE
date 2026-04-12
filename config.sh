@@ -1,3 +1,4 @@
+#!/system/bin/sh
 config_selinux=1
 config_kernel_umount=1
 config_uname_spoofing=1

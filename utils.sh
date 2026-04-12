@@ -1,3 +1,4 @@
+#!/system/bin/sh
 PATH=/data/adb/ksu/bin:$PATH
 MODDIR=${0%/*}
 KSU_BIN=/data/adb/ksud

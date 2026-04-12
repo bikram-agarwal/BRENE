@@ -1,3 +1,4 @@
+#!/system/bin/sh
 MODDIR=${0%/*}
 KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
@@ -5,161 +6,129 @@ SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 
-
-
 # Load utils
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
-
-
 # Update description
 description="A SuSFS/KernelSU module for SuSFS patched kernels"
-susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
+susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
 if [[ -n "${susfs_ver}" ]]; then
-	status="[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}+]\\\\n"
+  status="[Module Status: ✅ | SuSFS Patches: ✅ ${susfs_ver}+]\\\\n"
 else
-	status="[Module Status: ❌ | SuSFS Patches: ❌]\\\\n"
+  status="[Module Status: ❌ | SuSFS Patches: ❌]\\\\n"
 fi
 sed -i "s#^description=.*#description=${status}${description}#" "${MODDIR}/module.prop"
-
-
 
 # Enable kernel umount
 ${KSU_BIN} feature set kernel_umount "${config_kernel_umount}"
 ${KSU_BIN} feature save
 
-
-
 # Android Verified Boot Hash Spoofing
 [[ "${config_verified_boot_hash}" != '' ]] && resetprop_n "ro.boot.vbmeta.digest" "${config_verified_boot_hash}"
 
-
-
 # Developer Options
 [[ "${config_developer_options}" = "1" ]] && {
-	settings put global development_settings_enabled 1
+  settings put global development_settings_enabled 1
 } || {
-	settings put global development_settings_enabled 0
+  settings put global development_settings_enabled 0
 }
-
-
 
 # USB Debugging
 [[ "${config_usb_debugging}" = "1" ]] && {
-	settings put global adb_enabled 1
+  settings put global adb_enabled 1
 } || {
-	settings put global adb_enabled 0
+  settings put global adb_enabled 0
 }
-
-
 
 # Wireless Debugging
 [[ "${config_wireless_debugging}" = "1" ]] && {
-	settings put global adb_wifi_enabled 1
+  settings put global adb_wifi_enabled 1
 } || {
-	settings put global adb_wifi_enabled 0
+  settings put global adb_wifi_enabled 0
 }
-
-
 
 # SELinux
 if [[ "${config_selinux}" = "1" ]]; then
-	[[ "$(getenforce)" = "Permissive" ]] && setenforce 1
+  [[ "$(getenforce)" = "Permissive" ]] && setenforce 1
 else
-	[[ "$(getenforce)" = "Enforcing" ]] && setenforce 0
+  [[ "$(getenforce)" = "Enforcing" ]] && setenforce 0
 fi
-
-
 
 # Remove Play Integrity Fix Props (EXPERIMENTAL)
 [[ "${config_pif_props}" = "1" ]] && {
-	resetprop | grep -E "pihook|pixelprops|spoof" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "${prop}"; done
+  resetprop | grep -E "pihook|pixelprops|spoof" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "${prop}"; done
 }
-
-
 
 # Remove Custom ROM Props (EXPERIMENTAL)
 [[ "${config_rom_props}" = "1" ]] && {
-	resetprop | grep -E "lineage|crdroid" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "${prop}"; done
+  resetprop | grep -E "lineage|crdroid" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "${prop}"; done
 }
-
-
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
 ## First we need to wait until files are accessible in /sdcard ##
 until [[ -e "/sdcard/Android" ]]; do sleep 1; done
-
-
 
 # Remove "/sdcard/..5.u.S"
 TARGET="/sdcard/..5.u.S"
 [[ -e "${TARGET}" ]] && rm -rf "${TARGET}"
 inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
-
-
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
 [[ "${config_non_standard_sdcard_paths_hiding}" = "1" ]] && {
-	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "Non-standard /sdcard Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "Non-standard /sdcard Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
-	
-	for i in /sdcard/*; do
-		pass=0
-		for x in ${standard_paths}; do
-			[[ "/sdcard/${x}" = "${i}" ]] && {
-				pass=1
-				break
-			}
-		done
+  standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
 
-		[[ "${pass}" = "1" ]] && continue
+  for i in /sdcard/*; do
+    pass=0
+    for x in ${standard_paths}; do
+      [[ "/sdcard/${x}" = "${i}" ]] && {
+        pass=1
+        break
+      }
+    done
 
-		brene_sus_path_loop "${i}"
-	done
+    [[ "${pass}" = "1" ]] && continue
+
+    brene_sus_path_loop "${i}"
+  done
 }
-
-
 
 [[ "${config_non_standard_sdcard_android_paths_hiding}" = "1" ]] && {
-	printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "Non-standard /sdcard/Android Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "Non-standard /sdcard/Android Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#########################################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	standard_paths="data media obb"
-	
-	for i in /sdcard/Android/*; do
-		pass=0
-		for x in ${standard_paths}; do
-			[[ "/sdcard/Android/${x}" = "${i}" ]] && {
-				pass=1
-				break
-			}
-		done
+  standard_paths="data media obb"
 
-		[[ "${pass}" = "1" ]] && continue
+  for i in /sdcard/Android/*; do
+    pass=0
+    for x in ${standard_paths}; do
+      [[ "/sdcard/Android/${x}" = "${i}" ]] && {
+        pass=1
+        break
+      }
+    done
 
-		brene_sus_path_loop "${i}"
-	done
+    [[ "${pass}" = "1" ]] && continue
+
+    brene_sus_path_loop "${i}"
+  done
 }
-
-
 
 [[ "${config_hide_data_local_tmp}" == "1" ]] && {
-	printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "/data/local/tmp Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "/data/local/tmp Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n############################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	for i in /data/local/tmp/*; do
-		brene_sus_path_loop "${i}"
-	done
+  for i in /data/local/tmp/*; do
+    brene_sus_path_loop "${i}"
+  done
 }
-
-
 
 ## For paths that are read-only all the time, add them via 'add_sus_path' ##
 printf "\n##################\n" >> "${PERSISTENT_DIR}/logs.txt"
@@ -170,58 +139,48 @@ brene_sus_path "/system/addon.d"
 brene_sus_path "/vendor/bin/install-recovery.sh"
 brene_sus_path "/system/bin/install-recovery.sh"
 
-
-
 [[ "${config_hide_sdcard_android_data}" = "1" ]] && {
-	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "/sdcard/Android/data Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "/sdcard/Android/data Paths Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n#################################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	while true; do
-		items=$(ls /sdcard/Android/data | wc -l)
-		sleep 10
-		[[ "${items}" -eq "$(ls /sdcard/Android/data | wc -l)" ]] && break
-	done
+  while true; do
+    items=$(ls /sdcard/Android/data | wc -l)
+    sleep 10
+    [[ "${items}" -eq "$(ls /sdcard/Android/data | wc -l)" ]] && break
+  done
 
-	for i in $(pm list packages -3 | cut -d':' -f2); do
-		[[ -e "/sdcard/Android/data/${i}" ]] && brene_sus_path "/sdcard/Android/data/${i}"
-	done
+  for i in $(pm list packages -3 | cut -d':' -f2); do
+    [[ -e "/sdcard/Android/data/${i}" ]] && brene_sus_path "/sdcard/Android/data/${i}"
+  done
 }
-
-
 
 # Load custom_sus_map.txt
 [[ -e "${PERSISTENT_DIR}/custom_sus_map.txt" ]] && {
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" = "#"* ]] && continue
-		[[ -e "${i}" ]] && brene_sus_map "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_map.txt"
+  while IFS= read -r i; do
+    # Skip empty lines or comments
+    [[ -z "${i}" || "${i}" = "#"* ]] && continue
+    [[ -e "${i}" ]] && brene_sus_map "${i}"
+  done < "${PERSISTENT_DIR}/custom_sus_map.txt"
 }
-
-
 
 # Load custom_sus_path.txt
 [[ -e "${PERSISTENT_DIR}/custom_sus_path.txt" ]] && {
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" = "#"* ]] && continue
-		[[ -e "${i}" ]] && brene_sus_path "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_path.txt"
+  while IFS= read -r i; do
+    # Skip empty lines or comments
+    [[ -z "${i}" || "${i}" = "#"* ]] && continue
+    [[ -e "${i}" ]] && brene_sus_path "${i}"
+  done < "${PERSISTENT_DIR}/custom_sus_path.txt"
 }
-
-
 
 # Load custom_sus_path_loop.txt
 [[ -e "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]] && {
-	while IFS= read -r i; do
-		# Skip empty lines or comments
-		[[ -z "${i}" || "${i}" = "#"* ]] && continue
-		[[ -e "${i}" ]] && brene_sus_path_loop "${i}"
-	done < "${PERSISTENT_DIR}/custom_sus_path_loop.txt"
+  while IFS= read -r i; do
+    # Skip empty lines or comments
+    [[ -z "${i}" || "${i}" = "#"* ]] && continue
+    [[ -e "${i}" ]] && brene_sus_path_loop "${i}"
+  done < "${PERSISTENT_DIR}/custom_sus_path_loop.txt"
 }
-
-
 
 #### Hide the mmapped real file from various maps in /proc/self/, effective only for processes that are marked umounted with uid >= 10000 ####
 ## - *Please note that it is better to do it in boot-completed starge
@@ -244,32 +203,28 @@ brene_sus_path "/system/bin/install-recovery.sh"
 ## Hide some zygisk modules ##
 # brene_sus_map /data/adb/modules/my_module/zygisk/arm64-v8a.so
 [[ "${config_hide_zygisk_modules}" = "1" ]] && {
-	printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "Zygisk Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "Zygisk Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n###############################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	for i in $(find /data/adb/modules -name *.so | grep /zygisk/); do
-		brene_sus_map "${i}"
-	done
+  for i in $(find /data/adb/modules -name *.so | grep /zygisk/); do
+    brene_sus_map "${i}"
+  done
 }
-
-
 
 [[ "${config_hide_injections}" == "1" ]] && {
-	printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
-	printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "Module Injections Hiding" >> "${PERSISTENT_DIR}/logs.txt"
+  printf "\n########################\n" >> "${PERSISTENT_DIR}/logs.txt"
 
-	for i in $(ls /data/adb/modules); do
-		if [[ -e "/data/adb/modules/${i}/system" ]]; then
-			for x in $(find "/data/adb/modules/${i}/system" -type f -name "*.*"); do
-				brene_sus_map "${x}"
-			done
-		fi
-	done
+  for i in $(ls /data/adb/modules); do
+    if [[ -e "/data/adb/modules/${i}/system" ]]; then
+      for x in $(find "/data/adb/modules/${i}/system" -type f -name "*.*"); do
+        brene_sus_map "${x}"
+      done
+    fi
+  done
 }
-
-
 
 # Uname Spoofing
 kernel_version=$(uname -r | cut -d'-' -f1)
@@ -279,10 +234,6 @@ config_uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date)"
 sed -i "s/^config_uname_kernel_release=.*/config_uname_kernel_release='${config_uname_kernel_release}'/" ${PERSISTENT_DIR}/config.sh
 sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_uname_kernel_version}'/" ${PERSISTENT_DIR}/config.sh
 
-
-
-resetprop -c 2>/dev/null || true
-
-
+resetprop -c 2> /dev/null || true
 
 # echo "EOF" >> "${PERSISTENT_DIR}/log.txt"

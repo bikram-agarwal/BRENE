@@ -1,84 +1,75 @@
+#!/system/bin/sh
 KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
 PERSISTENT_DIR=/data/adb/brene
 DEST_BIN_DIR=/data/adb/ksu/bin
 
-
-
 # Hot Install Support
 export MODULE_HOT_INSTALL_REQUEST="true"
 
-
-
 # Check Compatibility
 [[ -z "${KSU}" ]] && {
-	abort '[❌] SuSFS is only for KernelSU or forks!'
+  abort '[❌] SuSFS is only for KernelSU or forks!'
 }
 
 [[ "${ARCH}" != "arm64" ]] && {
-	abort '[❌] Only arm64 is supported!'
+  abort '[❌] Only arm64 is supported!'
 }
 
 [[ ! -d "${DEST_BIN_DIR}" ]] && {
-	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
+  abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 }
 
 if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
-	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
+  echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
-	abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
+  abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
 fi
 
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}"
 chmod +x "${MODPATH}/inotify.sh"
 chmod 755 "${DEST_BIN_DIR}/susfs"
-ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2>/dev/null || true # For development
-ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2>/dev/null || true # For compatibility
+ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
+ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
-susfs_ver=$(${SUSFS_BIN} show version 2>/dev/null)
+susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
 if [[ -n "${susfs_ver}" ]]; then
-	echo "[✅] Detected SuSFS version: ${susfs_ver}"
+  echo "[✅] Detected SuSFS version: ${susfs_ver}"
 else
-	abort "[❌] Not detected SuSFS version!"
+  abort "[❌] Not detected SuSFS version!"
 fi
-
-
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {
-	touch "${KSU_MODULES_DIR}/susfs4ksu/disable" && echo '[✅] Disabling other SuSFS module'
+  touch "${KSU_MODULES_DIR}/susfs4ksu/disable" && echo '[✅] Disabling other SuSFS module'
 }
 [[ -e "${KSU_MODULES_DIR}/susfs_manager" ]] && {
-	touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
+  touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
 }
-
-
 
 echo '[✅] Preparing brene persistent directory (/data/adb/brene)'
 mkdir -p "${PERSISTENT_DIR}"
 
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]] && {
-	cp "${MODPATH}/custom_sus_map.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_map.txt'
+  cp "${MODPATH}/custom_sus_map.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_map.txt'
 }
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_path.txt" ]] && {
-	cp "${MODPATH}/custom_sus_path.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path.txt'
+  cp "${MODPATH}/custom_sus_path.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path.txt'
 }
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]] && {
-	cp "${MODPATH}/custom_sus_path_loop.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path_loop.txt'
+  cp "${MODPATH}/custom_sus_path_loop.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path_loop.txt'
 }
 
 if [[ ! -f "${PERSISTENT_DIR}/config.sh" ]]; then
-	cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
+  cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
 else
-	while IFS='=' read -r key value; do
+  while IFS='=' read -r key value; do
 
-		grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh" || echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
+    grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh" || echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
 
-	done < "${MODPATH}/config.sh"
+  done < "${MODPATH}/config.sh"
 fi
-
-
 
 # Uname Spoofing
 kernel_version=$(uname -r | cut -d'-' -f1)
@@ -87,8 +78,6 @@ config_uname_kernel_release="${kernel_version}-${android_release}-9-g69010110106
 config_uname_kernel_version="#1 SMP PREEMPT $(resetprop ro.build.date)"
 sed -i "s/^config_uname_kernel_release=.*/config_uname_kernel_release='${config_uname_kernel_release}'/" ${PERSISTENT_DIR}/config.sh
 sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_uname_kernel_version}'/" ${PERSISTENT_DIR}/config.sh
-
-
 
 # Disable outdated modules
 # echo "[✅] Disabling outdated modules"
