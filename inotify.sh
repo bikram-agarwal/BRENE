@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/bin/bash
 TARGET="/sdcard/..5.u.S"
 
 while true; do

@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/bin/bash
 MODDIR=${0%/*}
 KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
@@ -10,8 +10,10 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
 # Load config
 [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
+
 # Clear logs
-> "${PERSISTENT_DIR}/logs.txt"
+true > "${PERSISTENT_DIR}/logs.txt"
+true > "${PERSISTENT_DIR}/log.txt"
 
 ## Important Notes:
 ## - The following command can be run at other stages like service.sh, boot-completed.sh etc..,
@@ -82,10 +84,10 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 # ${SUSFS_BIN} set_cmdline_or_bootconfig ${FAKE_PROC_CMDLINE_FILE}
 # EOF
 
-[[ "${config_proc_cmdline_bootconfig_spoofing}" = "1" ]] && {
+if [[ "${config_proc_cmdline_bootconfig_spoofing}" == "1" ]]; then
   susfs_variant=$(${SUSFS_BIN} show variant)
 
-  if [[ "${susfs_variant}" = "GKI" ]]; then
+  if [[ "${susfs_variant}" == "GKI" ]]; then
     FAKE_BOOTCONFIG="${PERSISTENT_DIR}/fake_bootconfig"
 
     cat /proc/bootconfig > "${FAKE_BOOTCONFIG}"
@@ -100,7 +102,7 @@ DEST_BIN_DIR=/data/adb/ksu/bin
     sed -i 's/androidboot.verifiedbootstate=orange/androidboot.verifiedbootstate=green/' "${FAKE_CMDLINE}"
     ${SUSFS_BIN} set_cmdline_or_bootconfig "${FAKE_CMDLINE}"
   fi
-}
+fi
 
 #### Hiding the exposed /proc interface of ext4 loop and jdb2 when mounting ext4 img using sus_path ####
 # if [[ $config_hide_modules_img == 1 ]]; then
@@ -116,32 +118,48 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 #### Enable avc log spoofing to bypass 'su' domain detection via /proc/<pid> enumeration, effective for all processes ####
 ## disable it when users want to do some debugging with the permission issue or selinux issue ##
 #ksu_susfs enable_avc_log_spoofing 0
-[[ "${config_enable_avc_log_spoofing}" = "1" ]] && ${SUSFS_BIN} enable_avc_log_spoofing 1 || ${SUSFS_BIN} enable_avc_log_spoofing 0
+if [[ "${config_enable_avc_log_spoofing}" == "1" ]]; then
+  ${SUSFS_BIN} enable_avc_log_spoofing 1
+else
+  ${SUSFS_BIN} enable_avc_log_spoofing 0
+fi
 
 #### Hide all sus mounts for NON-SU processes in this stage just to prevent zygote from caching them in memory ####
 ## This should be mainly applied if you have ReZygisk enabled but without TreatWheel module ##
 ## Or it is up to you to keep it enabled since su process can still see the mounts ##
-[[ "${config_hide_sus_mnts_for_non_su_procs}" = "1" ]] && ${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 1 || ${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 0
+if [[ "${config_hide_sus_mnts_for_non_su_procs}" == "1" ]]; then
+  ${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 1
+else
+  ${SUSFS_BIN} hide_sus_mnts_for_non_su_procs 0
+fi
 
 #### Spoof the uname, effective for all processes ####
 # you can get your uname args by running 'uname {-r|-v}' on your stock ROM #
 # pass 'default' to tell susfs to use the default value by uname #
 # ${SUSFS_BIN} set_uname 'default' 'default'
-if [[ "${config_uname_spoofing}" = "1" ]]; then
-  printf "##############\n" >> "${PERSISTENT_DIR}/logs.txt"
-  printf "Uname Spoofing" >> "${PERSISTENT_DIR}/logs.txt"
-  printf "\n##############\n" >> "${PERSISTENT_DIR}/logs.txt"
-
-  brene_set_uname "${config_uname_kernel_release}" "${config_uname_kernel_version}"
-elif [[ "${config_custom_uname_spoofing}" = "1" ]]; then
-  printf "#####################\n" >> "${PERSISTENT_DIR}/logs.txt"
-  printf "Custom Uname Spoofing" >> "${PERSISTENT_DIR}/logs.txt"
-  printf "\n#####################\n" >> "${PERSISTENT_DIR}/logs.txt"
+if [[ "${config_custom_uname_spoofing}" == "1" ]]; then
+  {
+    printf "\n#####################\n"
+    printf "Custom Uname Spoofing"
+    printf "\n#####################\n"
+  } >> "${PERSISTENT_DIR}/logs.txt"
 
   brene_set_uname "${config_custom_uname_kernel_release}" "${config_custom_uname_kernel_version}"
+elif [[ "${config_uname_spoofing}" == "1" ]]; then
+  {
+    printf "\n##############\n"
+    printf "Uname Spoofing"
+    printf "\n##############\n"
+  } >> "${PERSISTENT_DIR}/logs.txt"
+
+  brene_set_uname "${config_uname_kernel_release}" "${config_uname_kernel_version}"
 fi
 
 ## Disable susfs kernel log ##
-[[ "${config_enable_log}" = "1" ]] && ${SUSFS_BIN} enable_log 1 || ${SUSFS_BIN} enable_log 0
+if [[ "${config_enable_log}" == "1" ]]; then
+  ${SUSFS_BIN} enable_log 1
+else
+  ${SUSFS_BIN} enable_log 0
+fi
 
-# echo "EOF" > "${PERSISTENT_DIR}/log.txt"
+echo "post-fs-data.sh" > "${PERSISTENT_DIR}/log.txt"

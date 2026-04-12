@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/bin/bash
 # MODDIR=${0%/*}
 # KSU_BIN=/data/adb/ksud
 # KSU_MODULES_DIR=/data/adb/modules
@@ -11,4 +11,4 @@
 # # Load config
 # [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
 
-# echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
+# echo "post-mount.sh" >> "${PERSISTENT_DIR}/log.txt"

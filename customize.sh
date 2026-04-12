@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/bin/bash
 KSU_BIN=/data/adb/ksud
 KSU_MODULES_DIR=/data/adb/modules
 SUSFS_BIN=/data/adb/ksu/bin/susfs
@@ -9,22 +9,22 @@ DEST_BIN_DIR=/data/adb/ksu/bin
 export MODULE_HOT_INSTALL_REQUEST="true"
 
 # Check Compatibility
-[[ -z "${KSU}" ]] && {
+if [[ -z "${KSU}" ]]; then
   abort '[❌] SuSFS is only for KernelSU or forks!'
-}
+fi
 
-[[ "${ARCH}" != "arm64" ]] && {
+if [[ "${ARCH}" != "arm64" ]]; then
   abort '[❌] Only arm64 is supported!'
-}
-
-[[ ! -d "${DEST_BIN_DIR}" ]] && {
-  abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
-}
+fi
 
 if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
   echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
   abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
+fi
+
+if [[ ! -d "${DEST_BIN_DIR}" ]]; then
+  abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 fi
 
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}"
@@ -64,9 +64,17 @@ mkdir -p "${PERSISTENT_DIR}"
 if [[ ! -f "${PERSISTENT_DIR}/config.sh" ]]; then
   cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
 else
-  while IFS='=' read -r key value; do
+  while IFS='=' read -r key value || [[ -n "${key}" ]]; do
 
-    grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh" || echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
+    # Skip empty lines or comments
+    [[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
+
+    if grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh"; then
+      :
+    else
+      echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
+      echo "[➕] Added missing key=value: ${key}=${value}"
+    fi
 
   done < "${MODPATH}/config.sh"
 fi
