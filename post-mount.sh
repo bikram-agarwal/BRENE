@@ -1,11 +1,14 @@
+#!/bin/bash
 # MODDIR=${0%/*}
-# DEST_BIN_DIR=/data/adb/ksu/bin
-# KSU_BIN=/data/adb/ksu/bin/ksud
+# KSU_BIN=/data/adb/ksud
+# KSU_MODULES_DIR=/data/adb/modules
 # SUSFS_BIN=/data/adb/ksu/bin/susfs
 # PERSISTENT_DIR=/data/adb/brene
-# # Load config
-# [[ -e ${PERSISTENT_DIR}/config.sh ]] && source ${PERSISTENT_DIR}/config.sh
-# source ${MODDIR}/utils.sh
+# DEST_BIN_DIR=/data/adb/ksu/bin
 
-# echo "EOF" >> "${PERSISTENT_DIR}/log.txt"
-# # EOF
+# # Load utils
+# [[ -e "${MODDIR}/utils.sh" ]] && source "${MODDIR}/utils.sh"
+# # Load config
+# [[ -e "${PERSISTENT_DIR}/config.sh" ]] && source "${PERSISTENT_DIR}/config.sh"
+
+# echo "post-mount.sh" >> "${PERSISTENT_DIR}/log.txt"
