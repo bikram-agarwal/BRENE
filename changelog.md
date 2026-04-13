@@ -1,3 +1,21 @@
+## v0.0.48
+
+- improve: simplify the code to remove "/sdcard/..5.u.S"
+- refactor: customize.sh
+- refactor: post-fs-data.sh
+- refactor: post-mount.sh
+- refactor: service.sh
+- refactor: boot-completed.sh
+- update: uninstall.sh, utils.sh and script.js
+- update: .gitignore
+- improve: add "#!/system/bin/sh" and format code
+- improve: code quality, bug fixes, logs, format code, use "#!/bin/bash"
+- improve: sync with upstream (ksu_module_susfs)
+- improve: my implementation to remove "..5.u.S"
+- release: v0.0.48
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.47...v0.0.48
+
 ## v0.0.47
 
 - improve: update susfs binary
