@@ -1,5 +1,6 @@
 #!/bin/bash
 config_selinux=1
+config_su_compat=1
 config_kernel_umount=1
 config_uname_spoofing=1
 config_hide_injections=1

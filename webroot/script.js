@@ -17,6 +17,13 @@ const configs = [
       ),
   },
   {
+    id: "su_compat",
+    action: (enabled) =>
+      setFeature(
+        `${KSU_BIN} feature set su_compat ${enabled ? 1 : 0} && ${KSU_BIN} feature save`,
+      ),
+  },
+  {
     id: "kernel_umount",
     action: (enabled) =>
       setFeature(

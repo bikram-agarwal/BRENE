@@ -21,8 +21,10 @@ else
 fi
 sed -i "s#^description=.*#description=${status}${description}#" "${MODDIR}/module.prop"
 
-# Enable kernel umount
+# Kernel Umount
 ${KSU_BIN} feature set kernel_umount "${config_kernel_umount}"
+# SU Compat
+${KSU_BIN} feature set su_compat "${config_su_compat}"
 ${KSU_BIN} feature save
 
 # Android Verified Boot Hash Spoofing
