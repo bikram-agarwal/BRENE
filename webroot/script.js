@@ -17,6 +17,13 @@ const configs = [
       ),
   },
   {
+    id: "su_compat",
+    action: (enabled) =>
+      setFeature(
+        `${KSU_BIN} feature set su_compat ${enabled ? 1 : 0} && ${KSU_BIN} feature save`,
+      ),
+  },
+  {
     id: "kernel_umount",
     action: (enabled) =>
       setFeature(
@@ -50,14 +57,12 @@ const configs = [
   { id: "uname_spoofing" },
   { id: "hide_injections" },
   { id: "hide_data_local_tmp" },
-  { id: "hide_zygisk_modules" },
   { id: "custom_uname_spoofing" },
   { id: "enable_avc_log_spoofing" },
   { id: "hide_sdcard_android_data" },
   { id: "proc_cmdline_bootconfig_spoofing" },
   { id: "non_standard_sdcard_paths_hiding" },
   { id: "android_system_properties_spoofing" },
-  { id: "non_standard_sdcard_android_paths_hiding" },
 ];
 
 // Load enabled features
@@ -239,24 +244,24 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 
 // TEMP
 // Chinese WebUI
-(async () => {
-  const button = document.getElementById("zh_index");
-  const dialog = document.getElementById("confirmation-dialog");
+// (async () => {
+//   const button = document.getElementById("zh_index");
+//   const dialog = document.getElementById("confirmation-dialog");
 
-  button?.addEventListener("click", () => {
-    dialog.show();
-  });
+//   button?.addEventListener("click", () => {
+//     dialog.show();
+//   });
 
-  dialog?.addEventListener("closed", () => {
-    if (dialog.returnValue === "confirm") {
-      exec(
-        `cp -f ${MODDIR}/webroot/zh_index.html ${MODDIR}/webroot/index.html`,
-      ).then((result) => {
-        toast(result.errno === 0 ? "Success" : result.stderr);
-      });
-    }
-  });
-})();
+//   dialog?.addEventListener("closed", () => {
+//     if (dialog.returnValue === "confirm") {
+//       exec(
+//         `cp -f ${MODDIR}/webroot/zh_index.html ${MODDIR}/webroot/index.html`,
+//       ).then((result) => {
+//         toast(result.errno === 0 ? "Success" : result.stderr);
+//       });
+//     }
+//   });
+// })();
 // TEMP
 
 // Custom sus map

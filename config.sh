@@ -1,16 +1,15 @@
 #!/bin/bash
 config_selinux=1
+config_su_compat=1
 config_kernel_umount=1
 config_uname_spoofing=1
 config_hide_injections=1
 config_hide_data_local_tmp=1
-config_hide_zygisk_modules=1
 config_enable_avc_log_spoofing=1
 config_hide_sus_mnts_for_non_su_procs=1
 config_proc_cmdline_bootconfig_spoofing=1
 config_non_standard_sdcard_paths_hiding=1
 config_android_system_properties_spoofing=1
-config_non_standard_sdcard_android_paths_hiding=1
 
 config_pif_props=0
 config_rom_props=0
