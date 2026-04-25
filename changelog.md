@@ -1,3 +1,16 @@
+## v0.0.49
+
+Supports SuSFS 2.1.0
+
+- add: a new toggle "SU Compat"
+- improve: unify the Non-standard /sdcard Paths Hiding toggles
+- remove: old Chinese WebUI
+- improve: unify the Injections Hiding toggles
+- webui: add a warning to "SU Compat" toggle; and a few improvements
+- release: v0.0.49
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.48...v0.0.49
+
 ## v0.0.48
 
 - improve: simplify the code to remove "/sdcard/..5.u.S"
