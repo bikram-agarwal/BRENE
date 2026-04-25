@@ -61,7 +61,10 @@
             <md-switch icons id="non_standard_sdcard_paths_hiding"></md-switch>
           </label>
           <div class="toggle-option-content">
-            <div class="toggle-info">Standard Paths:</div>
+            <div class="toggle-info">
+              Only effective for umounted process with uid >= 10.000
+            </div>
+            <div class="toggle-info">Standard Paths on /sdcard:</div>
             <div class="toggle-info">
               Alarms, Android, Audiobooks, DCIM, Documents
             </div>
@@ -69,32 +72,13 @@
               Download, Movies, Music, Notifications, Pictures
             </div>
             <div class="toggle-info">Podcasts, Recordings, Ringtones</div>
-            <div class="toggle-info">
-              Only effective for umounted process with uid >= 10.000
-            </div>
             <div class="toggle-info">e.g. the following paths</div>
             <div class="toggle-info">/sdcard/MT2 (MT Manager)</div>
             <div class="toggle-info">
               /sdcard/TWRP (Team Win Recovery Project)
             </div>
-          </div>
-          <md-ripple></md-ripple>
-        </div>
-
-        <div class="list-item">
-          <label class="toggle-option">
-            Non-standard /sdcard/Android Paths Hiding
-            <md-switch
-              icons
-              id="non_standard_sdcard_android_paths_hiding"
-            ></md-switch>
-          </label>
-          <div class="toggle-option-content">
-            <div class="toggle-info">Standard Paths:</div>
+            <div class="toggle-info">Standard Paths on /sdcard/Android:</div>
             <div class="toggle-info">data, media, obb</div>
-            <div class="toggle-info">
-              Only effective for umounted process with uid >= 10.000
-            </div>
             <div class="toggle-info">e.g. the following paths</div>
             <div class="toggle-info">/sdcard/Android/fas-rs</div>
           </div>

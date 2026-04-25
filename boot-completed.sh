@@ -102,8 +102,8 @@ if [[ "${config_non_standard_sdcard_paths_hiding}" == "1" ]]; then
     printf "\n#################################\n"
   } >> "${PERSISTENT_DIR}/logs.txt"
 
+  # /sdcard
   standard_paths="Alarms Android Audiobooks DCIM Documents Download Movies Music Notifications Pictures Podcasts Recordings Ringtones"
-
   for i in /sdcard/*; do
     pass=0
     for x in ${standard_paths}; do
@@ -117,17 +117,9 @@ if [[ "${config_non_standard_sdcard_paths_hiding}" == "1" ]]; then
 
     brene_sus_path_loop "${i}"
   done
-fi
 
-if [[ "${config_non_standard_sdcard_android_paths_hiding}" == "1" ]]; then
-  {
-    printf "\n#########################################\n"
-    printf "Non-standard /sdcard/Android Paths Hiding"
-    printf "\n#########################################\n"
-  } >> "${PERSISTENT_DIR}/logs.txt"
-
+  # /sdcard/Android
   standard_paths="data media obb"
-
   for i in /sdcard/Android/*; do
     pass=0
     for x in ${standard_paths}; do
