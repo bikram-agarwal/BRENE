@@ -67,7 +67,7 @@ fi
 
 # Remove Custom ROM Props (EXPERIMENTAL)
 if [[ "${config_rom_props}" == "1" ]]; then
-	resetprop | grep -E "lineage|crdroid" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
+	resetprop | grep -E "lineage|crdroid|halcyon" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
