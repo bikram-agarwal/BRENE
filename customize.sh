@@ -10,21 +10,21 @@ export MODULE_HOT_INSTALL_REQUEST="true"
 
 # Check Compatibility
 if [[ -z "${KSU}" ]]; then
-  abort '[❌] SuSFS is only for KernelSU or forks!'
+	abort '[❌] SuSFS is only for KernelSU or forks!'
 fi
 
 if [[ "${ARCH}" != "arm64" ]]; then
-  abort '[❌] Only arm64 is supported!'
+	abort '[❌] Only arm64 is supported!'
 fi
 
 if [[ "${KSU_KERNEL_VER_CODE}" -ge 32336 ]]; then
-  echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
+	echo "[✅] Detected KernelSU kernel version: ${KSU_KERNEL_VER_CODE}"
 else
-  abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
+	abort "[❌] Unsupported KernelSU kernel version: ${KSU_KERNEL_VER_CODE}!"
 fi
 
 if [[ ! -d "${DEST_BIN_DIR}" ]]; then
-  abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
+	abort "[❌] '${DEST_BIN_DIR}' not existed, installation aborted!"
 fi
 
 cp -f "${MODPATH}/tools/susfs" "${DEST_BIN_DIR}"
@@ -35,48 +35,52 @@ ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || tru
 
 susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
 if [[ -n "${susfs_ver}" ]]; then
-  echo "[✅] Detected SuSFS version: ${susfs_ver}"
+	if [[ "${susfs_ver}" == "v2.0.0" ]]; then
+		abort "[❌] Not supported SuSFS version v2.0.0!"
+	else
+		echo "[✅] Detected SuSFS version: ${susfs_ver}"
+	fi
 else
-  abort "[❌] Not detected SuSFS version!"
+	abort "[❌] Not detected SuSFS version!"
 fi
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {
-  touch "${KSU_MODULES_DIR}/susfs4ksu/disable" && echo '[✅] Disabling other SuSFS module'
+	touch "${KSU_MODULES_DIR}/susfs4ksu/disable" && echo '[✅] Disabling other SuSFS module'
 }
 [[ -e "${KSU_MODULES_DIR}/susfs_manager" ]] && {
-  touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
+	touch "${KSU_MODULES_DIR}/susfs_manager/disable" && echo '[✅] Disabling other SuSFS module'
 }
 
 echo '[✅] Preparing brene persistent directory (/data/adb/brene)'
 mkdir -p "${PERSISTENT_DIR}"
 
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]] && {
-  cp "${MODPATH}/custom_sus_map.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_map.txt'
+	cp "${MODPATH}/custom_sus_map.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_map.txt'
 }
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_path.txt" ]] && {
-  cp "${MODPATH}/custom_sus_path.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path.txt'
+	cp "${MODPATH}/custom_sus_path.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path.txt'
 }
 [[ ! -f "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]] && {
-  cp "${MODPATH}/custom_sus_path_loop.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path_loop.txt'
+	cp "${MODPATH}/custom_sus_path_loop.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path_loop.txt'
 }
 
 if [[ ! -f "${PERSISTENT_DIR}/config.sh" ]]; then
-  cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
+	cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'
 else
-  while IFS='=' read -r key value || [[ -n "${key}" ]]; do
+	while IFS='=' read -r key value || [[ -n "${key}" ]]; do
 
-    # Skip empty lines or comments
-    [[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
+		# Skip empty lines or comments
+		[[ -z "${key// /}" || "${key// /}" == "#"* ]] && continue
 
-    if grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh"; then
-      :
-    else
-      echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
-      echo "[➕] Added missing key=value: ${key}=${value}"
-    fi
+		if grep -q "^${key}=" "${PERSISTENT_DIR}/config.sh"; then
+			:
+		else
+			echo "${key}=${value}" >> "${PERSISTENT_DIR}/config.sh"
+			echo "[➕] Added missing key=value: ${key}=${value}"
+		fi
 
-  done < "${MODPATH}/config.sh"
+	done < "${MODPATH}/config.sh"
 fi
 
 # Uname Spoofing
