@@ -1,3 +1,27 @@
+## v0.0.50
+
+BRENE v0.0.50 - Supports SuSFS 2.1.0
+
+- improve: WebUI, thanks to telegram user @dnascorpionofficial (code reference)
+- webui: improve swipe
+- improve: new section "Paths Hiding"
+- improve: new section "Other Hiding"
+- improve: new section "Custom SuSFS Entries"
+- webui: some improvements
+- improve: BRENE logs
+- Also cover halcyon props with "Hide Custom ROM props"
+- Merge pull request #22 from bitThrived/main
+- add: a new toggle "BRENE Logs"
+- drop: old SuSFS patches support
+
+## What's Changed
+* Also cover halcyon props with "Hide Custom ROM props" by @bitThrived in https://github.com/rrr333nnn333/BRENE/pull/22
+
+## New Contributors
+* @bitThrived made their first contribution in https://github.com/rrr333nnn333/BRENE/pull/22
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.49...v0.0.50
+
 ## v0.0.49
 
 Supports SuSFS 2.1.0
