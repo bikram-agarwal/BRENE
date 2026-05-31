@@ -95,6 +95,7 @@ rm -rf "${TARGET4}"
 inotifyd "${MODDIR}/inotify.sh" /sdcard:n &
 
 ## For paths that are frequently modified, we can add them via 'add_sus_path_loop' ##
+## Be reminded that without HMA's vold app data enabled, added sus_paths are still vulnerable to zwc exploit, so in this case users also have to add its underlying path as well ##
 
 # Suspicious Paths Hiding
 
@@ -114,6 +115,20 @@ if [[ "${config_paths_hiding__non_standard_sdcard}" == "1" ]]; then
 		pass=0
 		for x in ${standard_paths}; do
 			if [[ "/sdcard/${x}" == "${i}" ]]; then
+				pass=1
+				break
+			fi
+		done
+
+		[[ "${pass}" == "1" ]] && continue
+
+		brene_sus_path_loop "${i}"
+	done
+
+	for i in /data/media/0/*; do
+		pass=0
+		for x in ${standard_paths}; do
+			if [[ "/data/media/0/${x}" == "${i}" ]]; then
 				pass=1
 				break
 			fi
