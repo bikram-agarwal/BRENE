@@ -324,7 +324,18 @@ sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_
 # EOF
 
 #### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
+# Umount Suspicious Mounts
+
+# 2b
 if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
+	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
+	${KSU_BIN} kernel notify-module-mounted
+
+	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r LINE; do ${KSU_BIN} kernel umount add --flags 2 "${LINE}" 2> /dev/null; done
+fi
+
+# 500k
+if [[ "${config_umount_suspicious_mounts_500k}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 
