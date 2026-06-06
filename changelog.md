@@ -1,3 +1,40 @@
+## v0.0.51
+
+BRENE v0.0.51 - Supports SuSFS 2.1.0
+
+- improve: README.md
+- optimize: Enhanced script security (#23)
+- add: a new toggle "Umount Suspicious Mounts"
+- webui: update descriptions
+- fix: rename correctly the name of CHANGELOG.md file
+- update: .gitignore
+- add: .vscode folder, settings.json file and set LF as default line ending in VSCode
+- add: .gitattributes file and set LF as default line ending
+- improve: ignore binaries in .gitattributes
+- fix: ignore .jpg binaries in .gitattributes
+- improve: normalize all the line endings
+- fix: remove "..5.u.S" and improve performance
+- fix: remove existence check for custom sus paths to support dynamic directories (#28)
+- improve: "Non-standard /sdcard" option and follow to upstream
+- fix: keep MIUI folder on MIUI/HyperOS to avoid recording failures (#30)
+- improve: "/sdcard/Android/[data | media | obb]" option and follow to upstream
+- improve: reuse "rm -rf" command
+- add: new section "STATUS"; improve: WebUI
+- add: new toggle "Umount Suspicious Mounts 2B"
+- webui: add experimental tag to "/sdcard/Android/[data | media | obb]" toggle
+- bump: version to v0.0.51
+
+## What's Changed
+* optimize: Enhanced script security by @helloworld2540 in https://github.com/rrr333nnn333/BRENE/pull/23
+* fix: remove existence check for custom sus paths to support dynamic directories by @Guxin12 in https://github.com/rrr333nnn333/BRENE/pull/28
+* fix: keep MIUI folder on MIUI/HyperOS to avoid recording failures by @Guxin12 in https://github.com/rrr333nnn333/BRENE/pull/30
+
+## New Contributors
+* @helloworld2540 made their first contribution in https://github.com/rrr333nnn333/BRENE/pull/23
+* @Guxin12 made their first contribution in https://github.com/rrr333nnn333/BRENE/pull/28
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.50...v0.0.51
+
 ## v0.0.50
 
 BRENE v0.0.50 - Supports SuSFS 2.1.0
