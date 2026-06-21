@@ -42,7 +42,7 @@
 					<div class="card-row" id="kernel-version">
 						<div class="card-row__body">
 							<span class="card-row__title">Kernel Version</span>
-							<span class="card-row__sub"></span>
+							<span class="card-row__sub">Loading...</span>
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -50,7 +50,11 @@
 					<div class="card-row" id="sus-status">
 						<div class="card-row__body">
 							<span class="card-row__title">..5.u.S Status</span>
-							<span class="card-row__sub"></span>
+							<span class="card-row__sub">Loading...</span>
+							<span class="card-row__sub">
+								SuSFS redirects the sus path to a supposed not-existing path named '..5.u.S', and this is the only way to settle the cross check of returned errno from various
+								syscalls, but one disadvantage is that if the path itself can be written/created by the app (MANAGE_EXTERNAL_STORAGE granted), then it is futile to hide it
+							</span>
 						</div>
 						<md-ripple></md-ripple>
 					</div>
@@ -81,6 +85,8 @@
 					<div class="card-row" data-module="treat_wheel">
 						<div class="card-row__body">
 							<span class="card-row__title">
+								<a href="https://github.com/rrr333nnn333/BreWheel">BreWheel</a>
+								or
 								<a href="https://github.com/PerformanC/Treat-Wheel-Zygisk">Treat Wheel</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
@@ -113,6 +119,8 @@
 					<div class="card-row" data-module="tricky_store">
 						<div class="card-row__body">
 							<span class="card-row__title">
+								<a href="https://github.com/Enginex0/TEESimulator-RS">TEESimulator-RS</a>
+								or
 								<a href="https://github.com/JingMatrix/TEESimulator">TEESimulator</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
@@ -255,7 +263,7 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">/sdcard/Android/[data | media | obb] <span class="chip-exp">EXPERIMENTAL</span></span>
+							<span class="card-row__title">/sdcard/Android/[data | media | obb]</span>
 							<span class="card-row__tag--code">Example of detections:</span>
 							<span class="card-row__tag--code">/sdcard/Android/data/ io.github.muntashirakon.AppManager</span>
 							<span class="card-row__tag--code">/sdcard/Android/media/ io.github.muntashirakon.AppManager</span>
@@ -281,6 +289,17 @@
 							<span class="card-row__tag--code">- Futile Hide (08)</span>
 						</div>
 						<md-switch icons id="hide_sus_mnts_for_non_su_procs"></md-switch>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row">
+						<div class="card-row__body">
+							<span class="card-row__title">Hide Suspicious PTYs</span>
+							<span class="card-row__tag--code">Example of detections:</span>
+							<span class="card-row__tag--code">Duck Detector:</span>
+							<span class="card-row__tag--code">- Found ROOT PTY</span>
+						</div>
+						<md-switch icons id="hide_suspicious_ptys"></md-switch>
 						<md-ripple></md-ripple>
 					</div>
 
