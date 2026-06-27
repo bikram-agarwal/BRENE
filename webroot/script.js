@@ -57,6 +57,14 @@ const configs = [
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
 ]
 
+// Open URLs
+document.querySelectorAll('a[href]').forEach((element) => {
+	element.addEventListener('click', (event) => {
+		event.preventDefault()
+		exec(`am start -a android.intent.action.VIEW -d ${element.href}`)
+	})
+})
+
 // Load Kernel Version
 exec('uname -r').then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
