@@ -77,7 +77,7 @@ exec('uname -r').then((result) => {
 })
 
 // Load ..5.u.S Status
-exec('[[ -e /sdcard/..5.u.S ]] && echo "Found ❌" || echo "Not found ✅"').then((result) => {
+exec('[[ -e /sdcard/..5.u.S ]] && echo "Found ❌" || echo "Normal ✅"').then((result) => {
 	const container = document.querySelector('#sus-status .card-row__sub')
 
 	if (result.errno !== 0) {
