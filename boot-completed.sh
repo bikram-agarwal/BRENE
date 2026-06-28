@@ -53,21 +53,26 @@ elif [[ "${config_wireless_debugging}" == "0" ]]; then
 	settings put global adb_wifi_enabled 0
 fi
 
-# SELinux
+# SELinux Enforcing
 if [[ "${config_selinux}" == "1" ]]; then
 	[[ "$(getenforce)" != "Enforcing" ]] && setenforce 1
-elif [[ "${config_selinux}" == "0" ]]; then
-	[[ "$(getenforce)" == "Enforcing" ]] && setenforce 0
 fi
 
-# Remove Play Integrity Fix Props (EXPERIMENTAL)
-if [[ "${config_pif_props}" == "1" ]]; then
-	resetprop | grep -E "pihook|pixelprops|spoof" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
-fi
-
-# Remove Custom ROM Props (EXPERIMENTAL)
+# Remove Custom ROM Properties
 if [[ "${config_rom_props}" == "1" ]]; then
-	resetprop | grep -E "lineage|crdroid|halcyon" | sed -E "s/^\[(.*)\]:.*/\1/" | while IFS= read -r prop; do resetprop -p -d "$prop"; done
+	crom="lineage|infinity|evolution|crdroid|arrow|mistos|axion|pixelos|rising|lunaris|halcyon|havoc|alphadroid|avium|bliss|calyx|derpfest|graphene|lmodroid|lumine|matrixx|superior|clover|yaap"
+	resetprop | grep -iE "${crom}" | awk -F'[][]' '{print $2}' | while read -r prop; do
+		resetprop -d "${prop}"
+	done
+
+	resetprop -d "ro.modversion"
+fi
+
+# Remove Play Integrity Fix Properties
+if [[ "${config_pif_props}" == "1" ]]; then
+	resetprop | grep -iE "pihook|pixelprops|spoof" | awk -F'[][]' '{print $2}' | while read -r prop; do
+		resetprop -d "${prop}"
+	done
 fi
 
 #### Hide some sus paths, effective only for processes that are marked umounted with uid >= 10000 ####
@@ -316,13 +321,13 @@ if [[ "${config_hide_injections}" == "1" ]]; then
 
 	for i in /data/adb/modules/*; do
 		if [[ -e "${i}/system" ]]; then
-			for x in $(find "${i}/system" -type f -name "*.*"); do
+			for x in $(find "${i}/system" -type f); do
 				brene_sus_map "${x}"
 			done
 		fi
 	done
 
-	for i in $(find /data/adb/modules -name "*.so" | grep /zygisk/); do
+	for i in $(find /data/adb/modules -name "*.so"); do
 		brene_sus_map "${i}"
 	done
 fi

@@ -57,6 +57,14 @@ const configs = [
 	{ id: 'paths_hiding__sdcard_android_data_media_obb' },
 ]
 
+// Open URLs
+document.querySelectorAll('a[href]').forEach((element) => {
+	element.addEventListener('click', (event) => {
+		event.preventDefault()
+		exec(`am start -a android.intent.action.VIEW -d ${element.href}`)
+	})
+})
+
 // Load Kernel Version
 exec('uname -r').then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
@@ -69,7 +77,7 @@ exec('uname -r').then((result) => {
 })
 
 // Load ..5.u.S Status
-exec('[[ -e /sdcard/..5.u.S ]] && echo "Found ❌" || echo "Not found ✅"').then((result) => {
+exec('[[ -e /sdcard/..5.u.S ]] && echo "Found ❌" || echo "Normal ✅"').then((result) => {
 	const container = document.querySelector('#sus-status .card-row__sub')
 
 	if (result.errno !== 0) {
@@ -416,12 +424,12 @@ UNIQUE_EOF
 	} catch (e) {}
 })()
 
-//
+// Swipe
 ;(async () => {
 	const tabBar = document.getElementById('tab-bar')
 	const bodyContent = document
 	const buttons = Array.from(tabBar.querySelectorAll('button.tab-btn'))
-	const SWIPE_THRESHOLD = 60
+	const SWIPE_THRESHOLD = 10
 	let currentIndex = buttons.findIndex((btn) => btn.classList.contains('active')) || 0
 	let touchStartX = 0
 	let touchStartY = 0

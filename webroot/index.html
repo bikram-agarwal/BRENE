@@ -51,7 +51,7 @@
 						<div class="card-row__body">
 							<span class="card-row__title">..5.u.S Status</span>
 							<span class="card-row__sub">Loading...</span>
-							<span class="card-row__sub">
+							<span class="card-row__tag--code">
 								SuSFS redirects the sus path to a supposed not-existing path named '..5.u.S', and this is the only way to settle the cross check of returned errno from various
 								syscalls, but one disadvantage is that if the path itself can be written/created by the app (MANAGE_EXTERNAL_STORAGE granted), then it is futile to hide it
 							</span>
@@ -88,6 +88,16 @@
 								<a href="https://github.com/rrr333nnn333/BreWheel">BreWheel</a>
 								or
 								<a href="https://github.com/PerformanC/Treat-Wheel-Zygisk">Treat Wheel</a>
+							</span>
+							<span class="card-row__sub status-text">Status: Not installed</span>
+						</div>
+						<md-ripple></md-ripple>
+					</div>
+
+					<div class="card-row" data-module="specter">
+						<div class="card-row__body">
+							<span class="card-row__title">
+								<a href="https://github.com/dpejoh/specter">Specter</a>
 							</span>
 							<span class="card-row__sub status-text">Status: Not installed</span>
 						</div>
@@ -525,8 +535,8 @@
 				<div class="card-group">
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Remove Custom ROM Properties <span class="chip-exp">EXPERIMENTAL</span></span>
-							<span class="card-row__sub">Some LineageOS, CrDroid and Halcyon properties</span>
+							<span class="card-row__title">Remove Custom ROM Properties</span>
+							<span class="card-row__sub">Some Custom ROM properties</span>
 						</div>
 						<md-switch icons id="rom_props"></md-switch>
 						<md-ripple></md-ripple>
@@ -534,7 +544,7 @@
 
 					<div class="card-row">
 						<div class="card-row__body">
-							<span class="card-row__title">Remove Play Integrity Fix Properties <span class="chip-exp">EXPERIMENTAL</span></span>
+							<span class="card-row__title">Remove Play Integrity Fix Properties</span>
 							<span class="card-row__sub">Some Play Integrity Fix properties</span>
 						</div>
 						<md-switch icons id="pif_props"></md-switch>
@@ -567,7 +577,7 @@
 					<div class="card-row">
 						<div class="card-row__body">
 							<span class="card-row__title">SELinux Enforcing</span>
-							<span class="card-row__sub">Enable or disable SELinux enforcing mode</span>
+							<span class="card-row__sub">Always use the SELinux enforcing mode</span>
 						</div>
 						<md-switch icons id="selinux"></md-switch>
 						<md-ripple></md-ripple>
