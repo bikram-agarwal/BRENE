@@ -1,3 +1,21 @@
+## v0.0.53
+
+BRENE v0.0.53 - Support for SuSFS 2.1.0 & 2.2.0
+
+- webui: add recommendation for Specter module
+- improve: sync with upstream (resetprop Magisk-compatible system property tool)
+- improve: simplify "Injections Hiding" code
+- improve: hide additional .so files in "Injections Hiding"
+- improve: "Remove Custom ROM Properties" and "Remove Play Integrity Fix Properties" options
+- improve: "SELinux Enforcing" option
+- webui: open links directly on the browser
+- webui: improve ..5.u.S Status
+- improve: add additional custom ROM props
+- webui: improve swipe
+- bump: version to v0.0.53
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.52...v0.0.53
+
 ## v0.0.52
 
 BRENE - A SuSFS/KernelSU module for SuSFS patched kernels
