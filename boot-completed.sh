@@ -317,27 +317,20 @@ sed -i "s/^config_uname_kernel_version=.*/config_uname_kernel_version='${config_
 
 # ## This is just an example to add the sus mounts to kernel umount ##
 # if [ ! -f "/data/adb/susfs_no_auto_add_kernel_umount" ]; then
-# 	cat /proc/1/mountinfo | grep -E "^5[0-9]{5,} .*$|KSU" | awk '{print $5}' | while read -r LINE; do /data/adb/ksu/bin/ksud kernel umount add --flags 2 "${LINE}" 2>/dev/null; done
+# 	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r LINE; do /data/adb/ksu/bin/ksud kernel umount add --flags 2 "${LINE}" 2>/dev/null; done
 # fi
 # EOF
 
 #### Adding sus mounts to umount list via built-in KernelSU kernel umount (not via add_try_umount from old susfs) ####
 # Umount Suspicious Mounts
 
-# 2b
 if [[ "${config_umount_suspicious_mounts}" == "1" ]]; then
 	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
 	${KSU_BIN} kernel notify-module-mounted
 
-	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r LINE; do ${KSU_BIN} kernel umount add --flags 2 "${LINE}" 2> /dev/null; done
-fi
-
-# 500k
-if [[ "${config_umount_suspicious_mounts_500k}" == "1" ]]; then
-	## Don't forget to notify KernelSU that all ksu modules all mounted and ready ##
-	${KSU_BIN} kernel notify-module-mounted
-
-	cat /proc/1/mountinfo | grep -E "^5[0-9]{5,} .*$|KSU" | awk '{print $5}' | while read -r LINE; do ${KSU_BIN} kernel umount add --flags 2 "${LINE}" 2> /dev/null; done
+	cat /proc/1/mountinfo | grep -E "^2[0-9]{9,} .*$|KSU" | awk '{print $5}' | while read -r mount; do
+		${KSU_BIN} kernel umount add -f 2 "${mount}" 2> /dev/null
+	done
 fi
 
 # Hide Suspicious PTYs
@@ -351,7 +344,7 @@ if [[ "${config_hide_suspicious_ptys}" == "1" ]]; then
 		} >> "${PERSISTENT_DIR}/logs.txt"
 	fi
 
-	for i in $(seq 0 10); do
+	for i in $(seq 0 9); do
 		brene_sus_path_loop "/dev/pts/${i}"
 	done
 fi

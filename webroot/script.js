@@ -47,7 +47,6 @@ const configs = [
 	{ id: 'custom_uname_spoofing' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
-	{ id: 'umount_suspicious_mounts_500k' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },
 	{ id: 'android_system_properties_spoofing' },
 
