@@ -1,3 +1,16 @@
+## v0.0.54
+
+BRENE v0.0.54 - Supports SuSFS 2.2.0
+
+- webui: add Custom ROM indicator
+- drop: "/data/media/0" paths hiding
+- improve: update resetprop usage with new flags
+- drop: old SuSFS patches support
+- add: new toggle "Hide framework-res.apk"
+- bump: version to v0.0.54
+
+**Full Changelog**: https://github.com/rrr333nnn333/BRENE/compare/v0.0.53...v0.0.54
+
 ## v0.0.53
 
 BRENE v0.0.53 - Support for SuSFS 2.1.0 & 2.2.0
