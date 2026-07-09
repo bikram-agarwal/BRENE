@@ -45,9 +45,9 @@ const configs = [
 	{ id: 'hide_injections' },
 	{ id: 'hide_suspicious_ptys' },
 	{ id: 'custom_uname_spoofing' },
+	{ id: 'hide_framework_res_apk' },
 	{ id: 'enable_avc_log_spoofing' },
 	{ id: 'umount_suspicious_mounts' },
-	{ id: 'umount_suspicious_mounts_500k' },
 	{ id: 'proc_cmdline_bootconfig_spoofing' },
 	{ id: 'android_system_properties_spoofing' },
 
@@ -68,6 +68,17 @@ document.querySelectorAll('a[href]').forEach((element) => {
 // Load Kernel Version
 exec('uname -r').then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout
+})
+
+// Load Custom ROM Status
+exec('[[ -n "$(find /system -iname "*lineage*")" ]] && echo "Yes" || echo "No"').then((result) => {
+	const container = document.querySelector('#custom-rom .card-row__sub')
 
 	if (result.errno !== 0) {
 		container.innerText = 'Failed to load'

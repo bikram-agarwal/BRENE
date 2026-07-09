@@ -1,8 +1,13 @@
-# BRENE
+# Changelog
 
-BRENE - A SuSFS/KernelSU module for SuSFS patched kernels
+# BRENE v0.0.54 - Supports SuSFS 2.2.0
 
-## Changelog
+- webui: add Custom ROM indicator
+- drop: "/data/media/0" paths hiding
+- improve: update resetprop usage with new flags
+- drop: old SuSFS patches support
+- add: new toggle "Hide framework-res.apk"
+- bump: version to v0.0.54
 
 # BRENE v0.0.53 - Support for SuSFS 2.1.0 & 2.2.0
 
@@ -17,14 +22,3 @@ BRENE - A SuSFS/KernelSU module for SuSFS patched kernels
 - improve: add additional custom ROM props
 - webui: improve swipe
 - bump: version to v0.0.53
-
-# BRENE v0.0.52 - Supports SuSFS 2.1.0 & 2.2.0
-
-- webui: add BreWheel recommendation
-- webui: add description for ..5.u.S Status
-- improve: "/sdcard/Android/[data | media | obb]" option and remove the experimental tag
-- add: hiding support for Neo Backup
-- update: README.md
-- add: new toggle "Hide Suspicious PTYs"
-- webui: add TEESimulator-RS recommendation
-- bump: version to v0.0.52
