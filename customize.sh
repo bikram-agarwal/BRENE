@@ -33,16 +33,16 @@ chmod 755 "${DEST_BIN_DIR}/susfs"
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/sus" 2> /dev/null || true       # For development
 ln -f -s "${DEST_BIN_DIR}/susfs" "${DEST_BIN_DIR}/ksu_susfs" 2> /dev/null || true # For compatibility
 
-susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
-if [[ -n "${susfs_ver}" ]]; then
-	if [[ "${susfs_ver}" == "v2.0.0" || "${susfs_ver}" == "v2.1.0" ]]; then
-		abort "[❌] Not supported SuSFS version ${susfs_ver}!"
-	else
-		echo "[✅] Detected SuSFS version: ${susfs_ver}"
-	fi
-else
-	abort "[❌] Not detected SuSFS version!"
-fi
+# susfs_ver=$(${SUSFS_BIN} show version 2> /dev/null)
+# if [[ -n "${susfs_ver}" ]]; then
+# 	if [[ "${susfs_ver}" == "v2.0.0" || "${susfs_ver}" == "v2.1.0" ]]; then
+# 		abort "[❌] Not supported SuSFS version ${susfs_ver}!"
+# 	else
+# 		echo "[✅] Detected SuSFS version: ${susfs_ver}"
+# 	fi
+# else
+# 	abort "[❌] Not detected SuSFS version!"
+# fi
 
 # Disable other SuSFS modules
 [[ -e "${KSU_MODULES_DIR}/susfs4ksu" ]] && {
@@ -55,15 +55,17 @@ fi
 echo '[✅] Preparing brene persistent directory (/data/adb/brene)'
 mkdir -p "${PERSISTENT_DIR}"
 
-[[ ! -f "${PERSISTENT_DIR}/custom_sus_map.txt" ]] && {
-	cp "${MODPATH}/custom_sus_map.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_map.txt'
-}
-[[ ! -f "${PERSISTENT_DIR}/custom_sus_path.txt" ]] && {
-	cp "${MODPATH}/custom_sus_path.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path.txt'
-}
-[[ ! -f "${PERSISTENT_DIR}/custom_sus_path_loop.txt" ]] && {
-	cp "${MODPATH}/custom_sus_path_loop.txt" "${PERSISTENT_DIR}" && echo '[✅] Added custom_sus_path_loop.txt'
-}
+files="
+custom_sus_map.txt
+custom_sus_mount.txt
+custom_sus_path.txt
+custom_sus_path_loop.txt
+"
+for file in ${files}; do
+	if [[ ! -f "${PERSISTENT_DIR}/${file}" ]]; then
+		touch "${PERSISTENT_DIR}/${file}" && echo "[✅] Added ${file}"
+	fi
+done
 
 if [[ ! -f "${PERSISTENT_DIR}/config.sh" ]]; then
 	cp "${MODPATH}/config.sh" "${PERSISTENT_DIR}" && echo '[✅] Added config.sh'

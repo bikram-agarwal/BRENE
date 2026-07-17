@@ -5,21 +5,19 @@ document.querySelector('div.preload-hidden').classList.remove('preload-hidden')
 
 const MODDIR = '/data/adb/modules/brene'
 const PERSISTENT_DIR = '/data/adb/brene'
-const SUSFS_BIN = '/data/adb/ksu/bin/susfs'
-const KSU_BIN = '/data/adb/ksud'
 const configs = [
 	// { id: 'hide_modules_img' },
 	{
 		id: 'hide_sus_mnts_for_non_su_procs',
-		action: (enabled) => setFeature(`${SUSFS_BIN} hide_sus_mnts_for_non_su_procs ${enabled ? 1 : 0}`),
+		action: (enabled) => setFeature(`susfs hide_sus_mnts_for_non_su_procs ${enabled ? 1 : 0}`),
 	},
 	{
 		id: 'su_compat',
-		action: (enabled) => setFeature(`${KSU_BIN} feature set su_compat ${enabled ? 1 : 0} && ${KSU_BIN} feature save`),
+		action: (enabled) => setFeature(`ksud feature set su_compat ${enabled ? 1 : 0} && ksud feature save`),
 	},
 	{
 		id: 'kernel_umount',
-		action: (enabled) => setFeature(`${KSU_BIN} feature set kernel_umount ${enabled ? 1 : 0} && ${KSU_BIN} feature save`),
+		action: (enabled) => setFeature(`ksud feature set kernel_umount ${enabled ? 1 : 0} && ksud feature save`),
 	},
 	{
 		id: 'developer_options',
@@ -65,6 +63,28 @@ document.querySelectorAll('a[href]').forEach((element) => {
 	})
 })
 
+// Load Android Version
+exec('resetprop ro.build.version.release').then((result) => {
+	const container = document.querySelector('#android-version .card-row__sub')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout
+})
+
+// Load SuSFS Variant
+exec('susfs show variant').then((result) => {
+	const container = document.querySelector('#susfs-variant .card-row__sub')
+
+	if (result.errno !== 0) {
+		container.innerText = 'Failed to load'
+		return
+	}
+	container.innerText = result.stdout
+})
+
 // Load Kernel Version
 exec('uname -r').then((result) => {
 	const container = document.querySelector('#kernel-version .card-row__sub')
@@ -88,7 +108,7 @@ exec('[[ -n "$(find /system -iname "*lineage*")" ]] && echo "Yes" || echo "No"')
 })
 
 // Load ..5.u.S Status
-exec('[[ -e /sdcard/..5.u.S ]] && echo "Found ❌" || echo "Normal ✅"').then((result) => {
+exec('[[ -e /sdcard/..5.u.S ]] && echo "Abnormal" || echo "Normal"').then((result) => {
 	const container = document.querySelector('#sus-status .card-row__sub')
 
 	if (result.errno !== 0) {
@@ -112,7 +132,7 @@ exec('ksud module list').then((result) => {
 		const statusSpan = row.querySelector('.status-text')
 
 		if (moduleIds.includes(moduleKey)) {
-			statusSpan.innerText = 'Status: Installed ✅'
+			statusSpan.innerText = 'Status: Installed'
 			statusSpan.style.color = '#4CAF50'
 		}
 	})
@@ -122,7 +142,7 @@ exec('ksud module list').then((result) => {
 
 		const card = document.querySelector('[data-module="tricky_addon"]')
 		const statusSpan = card.querySelector('.status-text')
-		statusSpan.innerText = 'Status: Installed ✅'
+		statusSpan.innerText = 'Status: Installed'
 		statusSpan.style.color = '#4CAF50'
 	})
 })
@@ -288,7 +308,7 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	const updateUname = (release, version) => {
 		updateConfig2('config_custom_uname_kernel_release', release)
 		updateConfig2('config_custom_uname_kernel_version', version.trim() === '' ? 'default' : version)
-		setFeature(`${SUSFS_BIN} set_uname "${release}" "${version}"`)
+		setFeature(`susfs set_uname "${release}" "${version}"`)
 		unameRelease.value = release
 		unameVersion.value = version.trim() === '' ? 'default' : version
 	}
@@ -310,31 +330,10 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	})
 })()
 
-// TEMP
-// Chinese WebUI
-// (async () => {
-//   const button = document.getElementById("zh_index");
-//   const dialog = document.getElementById("confirmation-dialog");
-
-//   button?.addEventListener("click", () => {
-//     dialog.show();
-//   });
-
-//   dialog?.addEventListener("closed", () => {
-//     if (dialog.returnValue === "confirm") {
-//       exec(
-//         `cp -f ${MODDIR}/webroot/zh_index.html ${MODDIR}/webroot/index.html`,
-//       ).then((result) => {
-//         toast(result.errno === 0 ? "Success" : result.stderr);
-//       });
-//     }
-//   });
-// })();
-// TEMP
-
-// Custom sus map
+//
 ;(async () => {
 	const mapField = document.getElementById('custom_sus_map_text_field')
+	const mountField = document.getElementById('custom_sus_mount_text_field')
 	const pathField = document.getElementById('custom_sus_path_text_field')
 	const loopField = document.getElementById('custom_sus_path_loop_text_field')
 	const applyButton = document.getElementById('unified_apply_button')
@@ -344,6 +343,9 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 	// Load all contents
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_map.txt`).then((result) => {
 		mapField.value = result.errno === 0 ? `${result.stdout}\n` : ''
+	})
+	exec(`cat ${PERSISTENT_DIR}/custom_sus_mount.txt`).then((result) => {
+		mountField.value = result.errno === 0 ? `${result.stdout}\n` : ''
 	})
 	exec(`cat ${PERSISTENT_DIR}/custom_sus_path.txt`).then((result) => {
 		pathField.value = result.errno === 0 ? `${result.stdout}\n` : ''
@@ -385,10 +387,14 @@ exec(`cat ${PERSISTENT_DIR}/config.sh`).then((result) => {
 				content = mapField.value
 				break
 			case 1:
+				file = 'custom_sus_mount.txt'
+				content = mountField.value
+				break
+			case 2:
 				file = 'custom_sus_path.txt'
 				content = pathField.value
 				break
-			case 2:
+			case 3:
 				file = 'custom_sus_path_loop.txt'
 				content = loopField.value
 				break
